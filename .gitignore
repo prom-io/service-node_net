@@ -1,0 +1,17 @@
+node_modules
+node_modules/**/
+*.log
+.env
+bin
+
+# travis
+profile.tmp
+profile.cov
+
+# IdeaIDE
+.idea
+
+# VS Code
+.vscode
+
+dist

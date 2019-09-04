@@ -1,0 +1,25 @@
+{
+  "name": "service-node_net",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^12.7.2",
+    "typescript": "^3.6.2"
+  },
+  "dependencies": {
+    "@types/web3": "^1.0.19",
+    "app-module-path": "^2.2.0",
+    "dotenv": "^8.1.0",
+    "pkg": "^4.4.0",
+    "web3": "^1.2.1",
+    "winston": "^3.2.1"
+  },
+  "bin": "dist/index.js"
+}
