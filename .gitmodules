@@ -1,0 +1,3 @@
+[submodule "go-ethereum"]
+	path = go-ethereum
+	url = git@gitlab.com:quybit/prometheus/go-ethereum.git
