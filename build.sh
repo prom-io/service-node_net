@@ -9,5 +9,5 @@ rm -rf "$bindir"
 cd "$gosrc"
 PWD="$gosrc"
 
-go build
+$gosrc/build/env.sh go run build/ci.go install
 cp -r "$gosrc/build/bin" "$bindir"
