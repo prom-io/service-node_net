@@ -21,5 +21,9 @@
     "web3": "^1.2.1",
     "winston": "^3.2.1"
   },
-  "bin": "dist/index.js"
+  "bin": "dist/index.js",
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "assets": "bin/**/*"
+  }
 }
