@@ -1,0 +1,12 @@
+version: "3"
+services: 
+  bootnode.com:
+    build: .
+    tty: true
+  vm2:
+    image: node:10
+    volumes:
+      - ./:/app/
+    depends_on:
+      - bootnode.com
+    tty: true

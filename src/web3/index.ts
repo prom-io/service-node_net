@@ -3,7 +3,7 @@ import {admin} from './extender'
 import net from 'net'
 import IBootstrap from '../common/interfaces/IBootstrap'
 import App from '../application';
-import GethExecutor from '../commands/executor/GethExecutor'
+import GethExecutor from '../commands/executor/geth'
 import { Socket } from 'net';
 
 export default class Web3Connector implements IBootstrap
@@ -22,13 +22,13 @@ export default class Web3Connector implements IBootstrap
 
     public bootstrap():any
     {
-        let geth: GethExecutor = this.app.getModule('geth')
-        geth.on('geth::ipc::connect',(executor:GethExecutor, sock: Socket) => {
+        let geth = this.app.getModule('geth')
+        geth.on('geth::ipc::connect',(executor:any, sock: Socket) => {
             this.web3.setProvider(new Web3.providers.IpcProvider(geth.getIpcPath(),net))
-            // this.adminModule.admin.peers()
-            this.adminModule.admin.peers((e:Error|null,r:string|Buffer) => {
-                console.log(e,r)
-            })
+            this.adminModule.admin.nodeInfo((e,r) => console.log(r.enode))
+            // this.adminModule.admin.peers((e:Error|null,r:string|Buffer) => {
+            //     console.log(e,r)
+            // })
         })
         
     }

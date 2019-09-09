@@ -1,12 +1,13 @@
 import winston from 'winston'
-import GethExecutor from '../commands/executor/GethExecutor';
 import {Bootstrap} from '../params'
+import path from 'path'
 
 
 export default class App 
 {
     private logger: winston.Logger;
     private baseDir: string
+    private storageDir: string
     private modules: Map<string,any>
 
     public constructor(baseDir: string, logger: winston.Logger)
@@ -14,6 +15,12 @@ export default class App
         this.logger = logger
         this.baseDir = baseDir
         this.modules = new Map<string,Object>()
+        this.storageDir = path.join(this.baseDir,'/storage')
+    }
+
+    public getStorageDir()
+    {
+        return this.storageDir
     }
 
     public getBaseDir()
