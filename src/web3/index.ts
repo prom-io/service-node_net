@@ -25,7 +25,7 @@ export default class Web3Connector implements IBootstrap
         let geth = this.app.getModule('geth')
         geth.on('geth::ipc::connect',(executor:any, sock: Socket) => {
             this.web3.setProvider(new Web3.providers.IpcProvider(geth.getIpcPath(),net))
-            this.adminModule.admin.nodeInfo((e,r) => console.log(r.enode))
+            this.adminModule.admin.nodeInfo((e:Error|null,r:any) => console.log(r.enode))
             // this.adminModule.admin.peers((e:Error|null,r:string|Buffer) => {
             //     console.log(e,r)
             // })

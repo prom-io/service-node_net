@@ -16,9 +16,9 @@ export default abstract class Base extends EventEmitter implements IExecutor,IBo
 
     public constructor(app:App) {
         super()
-        this.ipcPath = process.env.GETH_IPC_PATH || path.join(app.getBaseDir(),'/ipc/geth.ipc')
+        this.ipcPath = process.env.GETH_IPC_PATH || path.join(app.getStorageDir(),'/ipc/geth.ipc')
         this.args = new Map<string,string|number>()
-        this.args.set("--datadir",process.env.GETH_DATADIR || path.join(app.getBaseDir(),'/_chaindata'))
+        this.args.set("--datadir",process.env.GETH_DATADIR || path.join(app.getStorageDir(),'/_chaindata'))
         this.args.set("--ipcpath",this.ipcPath)
         this.args.set("--port",process.env.GETH_PORT || 30303)
         this.args.set("--nousb",'')
