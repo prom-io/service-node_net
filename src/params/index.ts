@@ -6,7 +6,7 @@ import GethExecutor from '../commands/executor/geth';
 
 export const Geth = {
     bootnodes: [
-        'enode://b1e3c40bb0ec9680959a77c680276d00b77dd7d0538bec95f652fdac70d0086e39e9ddd29cd16056f43e5347fe2ce9ce2c1670258e3a8c6418ffe7203ba5d517@127.0.0.1:30303'
+        'enode://e7fe6257d7f2b90c0e3ebce39abe585bbc71e7df10625ce210f8304dd88f2efcbb8db902b1d165ff105e0f7c78284461f539b6556ebdca33718268ab3b74f9d7@172.25.0.101:30303'
     ],
     networkId: 0x01F4
 }

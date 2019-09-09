@@ -1,12 +1,25 @@
 version: "3"
-services: 
-  bootnode.com:
-    build: .
-    tty: true
+networks:
+  chainnet:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.25.0.0/24
+services:
+  bootnode:
+    build:
+      context: ./bootnode
+    networks:
+      chainnet:
+        ipv4_address: 172.25.0.101
   vm2:
     image: node:10
     volumes:
       - ./:/app/
+    working_dir: /app/
     depends_on:
-      - bootnode.com
+      - bootnode
+    networks:
+      chainnet:
+        ipv4_address: 172.25.0.102
     tty: true

@@ -31,7 +31,8 @@ export default class Runner extends Base
                     args.push(v.toString());
             }
         })
-        args.push('--mine','--miner.threads','1')
+        // args.push('--mine','--miner.threads','1')
+        console.log(file, args.join(' '))
         let childProcess:ChildProcess = spawn(file, args,{stdio:['ignore',process.stdout,process.stderr,'ipc']})
         let onExit = (code:number, signal:string) => {
             this.runned = false
