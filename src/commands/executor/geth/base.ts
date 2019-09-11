@@ -2,7 +2,7 @@ import App from './../../../application'
 import IBootstrap from '../../../common/interfaces/IBootstrap'
 import IExecutor from '../../IExecutor'
 import path from 'path'
-import {Geth as GethParams} from './../../../params'
+import params from './../../../params'
 import { EventEmitter } from 'events';
 import fs from 'fs'
 
@@ -16,6 +16,7 @@ export default abstract class Base extends EventEmitter implements IExecutor,IBo
 
     public constructor(app:App) {
         super()
+        let GethParams = params.Geth
         this.ipcPath = process.env.GETH_IPC_PATH || path.join(app.getStorageDir(),'/ipc/geth.ipc')
         this.args = new Map<string,string|number>()
         this.args.set("--datadir",process.env.GETH_DATADIR || path.join(app.getStorageDir(),'/_chaindata'))

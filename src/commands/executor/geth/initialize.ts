@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs, { WriteStream } from 'fs'
 import path from 'path'
 import {promisify} from 'util'
 import { spawn, ChildProcess} from 'child_process'
@@ -81,7 +81,7 @@ export default class Initializer extends Base
 
     private async createGenesisJson()
     {
-        let writer = promisify(fs.createWriteStream).bind(fs);
+        let writer = promisify(fs.writeFile).bind(fs);
         let genesisFile: string
         await writer(
             genesisFile = path.join( this.app.getStorageDir(),'genesis.json' ),

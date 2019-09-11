@@ -1,6 +1,6 @@
 import winston from 'winston'
-import {Bootstrap} from '../params'
 import path from 'path'
+import params from '../params';
 
 
 export default class App 
@@ -50,7 +50,7 @@ export default class App
 
     public bootstrap()
     {
-        Bootstrap.forEach(fn => fn(this).bootstrap())
+        params.Bootstrap.forEach(fn => fn(this).bootstrap())
     }
 
     public run()
