@@ -1,8 +1,8 @@
-import handler from './caller'
-import App from '../application'
+import App from "../application";
+import handler from "./caller";
 
 const Rpc = (app: App) => {
-    return { handle: handler(app)}
-}
+    return { handle: handler(app)};
+};
 
-export default Rpc
+export default Rpc;

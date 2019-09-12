@@ -1,16 +1,12 @@
-import util from 'util'
-import {getLogger} from './logger'
-import App from './application'
-import path from 'path'
-import {config} from 'dotenv'
+import {config} from "dotenv";
+import path from "path";
+import util from "util";
+import App from "./application";
+import {getLogger} from "./logger";
 
-
-
-config()
-let logger = getLogger()
-let app = new App(path.dirname(__dirname), logger)
-app.setLogger(logger)
-app.bootstrap()
-app.run()
-
-
+config();
+const logger = getLogger();
+const app = new App(path.dirname(__dirname), logger);
+app.setLogger(logger);
+app.bootstrap();
+app.run();

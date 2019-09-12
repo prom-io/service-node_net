@@ -1,39 +1,39 @@
-import winston from 'winston'
-let {createLogger, format, transports} = winston
+import winston from "winston";
+const {createLogger, format, transports} = winston;
 
-let __logger:winston.Logger|null = null;
+let __logger: winston.Logger|null = null;
 
-let create = (): winston.Logger => {
-    let logFileName: string = process.env.LOG_FILENAME || 'error'
-    let logger = createLogger({
+const create = (): winston.Logger => {
+    const logFileName: string = process.env.LOG_FILENAME || "error";
+    const logger = createLogger({
         format: format.combine(
-            format.timestamp({format:'YYYY-MM-DD HH:mm:ss'}),
+            format.timestamp({format: "YYYY-MM-DD HH:mm:ss"}),
             format.errors({stack: true}),
             format.splat(),
-            format.json()
+            format.json(),
         ),
         transports: [
-            new transports.File({filename:`error-${logFileName}.log`, level: 'error'}),
-            new transports.File({filename:`${logFileName}.log`})
-        ]
-    })
+            new transports.File({filename: `error-${logFileName}.log`, level: "error"}),
+            new transports.File({filename: `${logFileName}.log`}),
+        ],
+    });
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
         logger.add(new winston.transports.Console({
-            format: winston.format.simple()
-        }))
+            format: winston.format.simple(),
+        }));
     }
 
-    return logger
-}
+    return logger;
+};
 
-let getOrCreateLogger = (): winston.Logger => {
-    if (null ===__logger) {
-        __logger = create()
+const getOrCreateLogger = (): winston.Logger => {
+    if (null === __logger) {
+        __logger = create();
     }
-    return __logger
-}
+    return __logger;
+};
 
 export function getLogger(): winston.Logger {
-    return getOrCreateLogger()
+    return getOrCreateLogger();
 }

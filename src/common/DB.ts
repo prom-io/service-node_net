@@ -1,29 +1,25 @@
-import IBootstrap from './interfaces/IBootstrap'
-import DataStore from 'nedb'
-import App from '../application'
-import path from 'path'
+import DataStore from "nedb";
+import path from "path";
+import App from "../application";
+import IBootstrap from "./interfaces/IBootstrap";
 
-export default class DB implements IBootstrap
-{
-    private app: App
-    private store: DataStore
+export default class DB implements IBootstrap {
+    private app: App;
+    private store: DataStore;
 
-    constructor(app: App)
-    {
-        this.app = app
+    constructor(app: App) {
+        this.app = app;
 
         this.store = new DataStore({
-            filename: path.join(this.app.getStorageDir(), 'data.db') ,
-            autoload: true
-        })
+            filename: path.join(this.app.getStorageDir(), "data.db") ,
+            autoload: true,
+        });
     }
 
-    public getStore(): DataStore
-    {
-        return this.store
+    public getStore(): DataStore {
+        return this.store;
     }
 
-    public bootstrap():any
-    {
+    public bootstrap(): any {
     }
 }

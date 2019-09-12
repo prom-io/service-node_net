@@ -16,7 +16,7 @@ RUN echo $PASS > /opt/passwd && ls -la /opt/ && /opt/bin/geth --datadir /opt/cha
     && /opt/bin/geth --datadir /opt/chaindata account new --password /opt/passwd
 
 CMD exec /opt/bin/geth --datadir /opt/chaindata \
-    --networkid="500" \
+    --networkid="123123123456" \
     --rpc --rpcaddr "0.0.0.0" --rpccorsdomain "*" \
     --mine --miner.threads 1 \
     --nousb

@@ -1,9 +1,9 @@
 
  const Geth = {
     bootnodes: [
-        'enode://e7fe6257d7f2b90c0e3ebce39abe585bbc71e7df10625ce210f8304dd88f2efcbb8db902b1d165ff105e0f7c78284461f539b6556ebdca33718268ab3b74f9d7@172.25.0.101:30303'
+        "enode://def13bb17845219edcdcd8a56dafbc5b27c7283b3abd872f68e3c65abcc598e85483ccba4094e23135d1c9fa1528b12679f3f6418d0d8166b0fae952ee00c347@127.0.0.1:30305",
     ],
-    networkId: 0x01F4
-}
+    networkId: 123123123456,
+};
 
-export default Geth
+ export default Geth;

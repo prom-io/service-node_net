@@ -1,7 +1,9 @@
-import Runner from './runner'
-import Initializer from './initialize'
+import Initializer from "./initialize";
+import Runner from "./runner";
+import AccountInitial from './init-account'
 
 export default {
     GethRunner: Runner,
-    GethInitializer: Initializer
-}
+    GethInitializer: Initializer,
+    GethAccountInitial :AccountInitial
+};
