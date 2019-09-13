@@ -7,7 +7,6 @@ const MAX_CONNECT_ATTEMPTS = 5;
 const RETRY_WAIT_TIME = 1000;
 
 export default class Runner extends Base {
-    public bootstrap(): any {}
 
     public async run<T>(): Promise<T> {
         return new Promise<T>((res, rej) => {
@@ -30,7 +29,6 @@ export default class Runner extends Base {
             }
         });
         // args.push('--mine','--miner.threads','1')
-        console.log(file, args.join(" "));
         const childProcess: ChildProcess = spawn(file, args, {stdio: ["ignore", process.stdout, process.stderr, "ipc"]});
         const onExit = (code: number, signal: string) => {
             this.runned = false;
@@ -65,7 +63,9 @@ export default class Runner extends Base {
                     sock.destroy();
                 });
                 sock.write('{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":67}', (e) => {
-                    console.log(arguments);
+                    if (e) {
+                        this.app.getLogger().error(e)
+                    }
                 });
 
             });

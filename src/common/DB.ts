@@ -11,8 +11,8 @@ export default class DB implements IBootstrap {
         this.app = app;
 
         this.store = new DataStore({
-            filename: path.join(this.app.getStorageDir(), "data.db") ,
             autoload: true,
+            filename: path.join(this.app.getStorageDir(), "data.db")
         });
     }
 
@@ -21,5 +21,6 @@ export default class DB implements IBootstrap {
     }
 
     public bootstrap(): any {
+        return;
     }
 }

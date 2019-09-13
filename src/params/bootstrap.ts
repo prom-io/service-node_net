@@ -15,7 +15,7 @@ const Bootstrap: Array<(app: App) => IBootstrap> = [
         .then(() => g.run());
         return g;
     },
-    (app) => { const _w3 = new Web3Connector(app); app.addModule("web3", _w3); return _w3; },
+    (app) => { const w3 = new Web3Connector(app); app.addModule("web3", w3); return w3; },
     (app) => { const ipc = new IPCListener(app); app.addModule("ipclistener", ipc); return ipc; },
 ];
 

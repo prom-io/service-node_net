@@ -24,13 +24,13 @@ export default abstract class Base extends EventEmitter implements IExecutor, IB
         this.args.set("--nousb", "");
         // this.args.set("--verbosity",5)
         this.args.set("--networkid", GethParams.networkId);
-        let isBootNode = process.env.IS_BOOTNODE ? ( process.env.IS_BOOTNODE !== 'false' ) : false
+        const isBootNode = process.env.IS_BOOTNODE ? ( process.env.IS_BOOTNODE !== "false" ) : false;
         if (!isBootNode) {
             GethParams.bootnodes.forEach((v) => this.args.set("--bootnodes", v));
         } else {
-            this.args.set('--fast','')
+            this.args.set("--fast", "");
         }
-        this.args.set('--cache','1024')
+        this.args.set("--cache", "1024");
         this.args.set("--ipcpath", this.ipcPath);
         const rpc: string|undefined = process.env.GETH_RPC;
         if (false !== !!rpc || "false" !== rpc) {
@@ -44,7 +44,7 @@ export default abstract class Base extends EventEmitter implements IExecutor, IB
         this.app = app;
     }
 
-    public abstract bootstrap(): any;
+    public bootstrap(): any {return;}
     public abstract run<T>(): Promise<T>;
 
     public getIpcPath(): string {
@@ -57,6 +57,7 @@ export default abstract class Base extends EventEmitter implements IExecutor, IB
             this.command, // File name to execute
         );
         try {
+            // tslint:disable-next-line: no-bitwise
             fs.accessSync(file, fs.constants.F_OK | fs.constants.X_OK);
             return file;
         } catch (e) {

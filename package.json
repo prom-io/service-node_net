@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
+    "start": "node dist/index.js",
+    "c": "tsc",
+    "cw": "tsc -w",
+    "tsl": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -16,6 +19,7 @@
     "@types/node-ipc": "^9.1.1",
     "@types/web3": "^1.0.19",
     "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.6.2"
   },
   "dependencies": {

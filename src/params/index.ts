@@ -5,6 +5,6 @@ import IpcConfig from "./ipc";
 
 export default {
     Bootstrap,
-    IpcConfig,
     Geth,
+    IpcConfig,
 };

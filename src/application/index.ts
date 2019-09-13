@@ -11,7 +11,7 @@ export default class App {
     public constructor(baseDir: string, logger: winston.Logger) {
         this.logger = logger;
         this.baseDir = baseDir;
-        this.modules = new Map<string, Object>();
+        this.modules = new Map<string, any>();
         this.storageDir = path.join(this.baseDir, "/storage");
     }
 
@@ -44,6 +44,6 @@ export default class App {
     }
 
     public run() {
-
+        return;
     }
 }

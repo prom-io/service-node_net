@@ -1,7 +1,7 @@
 import winston from "winston";
 const {createLogger, format, transports} = winston;
 
-let __logger: winston.Logger|null = null;
+let loggerSingleton: winston.Logger|null = null;
 
 const create = (): winston.Logger => {
     const logFileName: string = process.env.LOG_FILENAME || "error";
@@ -28,10 +28,10 @@ const create = (): winston.Logger => {
 };
 
 const getOrCreateLogger = (): winston.Logger => {
-    if (null === __logger) {
-        __logger = create();
+    if (null === loggerSingleton) {
+        loggerSingleton = create();
     }
-    return __logger;
+    return loggerSingleton;
 };
 
 export function getLogger(): winston.Logger {

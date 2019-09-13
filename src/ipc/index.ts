@@ -15,13 +15,12 @@ export default class IPCListener implements IBootstrapping {
         this.ipc.config = {...this.ipc.config, ...params.IpcConfig};
     }
 
-    public bootstrap(): any {   
+    public bootstrap(): any {
         this.ipc.config.encoding = "utf8";
         const handler = Rpc(this.app);
         this.ipc.serve(() => {
             this.ipc.server.on("data", async (data: Buffer, socket: Socket) => {
                 const r = await handler.handle(data);
-                console.log(r);
                 this.ipc.server.emit(socket, JSON.stringify(r));
             });
         });

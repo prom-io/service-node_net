@@ -1,6 +1,6 @@
 import { ChildProcess, spawn} from "child_process";
 import fs, { WriteStream } from "fs";
-import DataStore  from "nedb";
+import DataStore from "nedb";
 import path from "path";
 import {promisify} from "util";
 import Base from "./base";
@@ -20,7 +20,9 @@ const GENESIS = `
 `;
 
 export default class Initializer extends Base {
-    public bootstrap(): any {}
+    public bootstrap(): any {
+        return;
+    }
 
     public async run<T>(): Promise<T> {
         return new Promise<T>(async ( resolve, reject) => {

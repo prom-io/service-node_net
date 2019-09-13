@@ -12,7 +12,6 @@ export default (app: App) => {
 
     return async (buf: Buffer|string) => {
         const rpc = JSON.parse(buf.toString());
-        console.log(rpc);
         if (!rpc.method) {
             return empty(rpc.id);
         }
