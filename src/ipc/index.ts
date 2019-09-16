@@ -24,6 +24,12 @@ export default class IPCListener implements IBootstrapping {
                 this.ipc.server.emit(socket, JSON.stringify(r));
             });
         });
+        this.ipc.serveNet('localhost',8989,() => {
+            this.ipc.server.on("data", async (data: Buffer, socket: Socket) => {
+                const r = await handler.handle(data);
+                this.ipc.server.emit(socket, JSON.stringify(r));
+            });
+        })
         this.ipc.server.start();
     }
 }

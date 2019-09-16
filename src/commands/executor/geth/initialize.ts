@@ -20,9 +20,6 @@ const GENESIS = `
 `;
 
 export default class Initializer extends Base {
-    public bootstrap(): any {
-        return;
-    }
 
     public async run<T>(): Promise<T> {
         return new Promise<T>(async ( resolve, reject) => {

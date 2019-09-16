@@ -7,10 +7,6 @@ import Base from "./base";
 
 export default class AccountInitial extends Base {
 
-    public bootstrap(): any {
-        return;
-    }
-
     public run<T>(): Promise<T> {
         return new Promise<T>( async (resolve, reject) => {
             try {
