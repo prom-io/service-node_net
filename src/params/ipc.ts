@@ -1,37 +1,37 @@
-import os from 'os'
+import os from "os";
 /** @see https://github.com/RIAEvangelist/node-ipc */
 
 const {
     IPC_APPSPACE,
     IPC_SOCKET_ROOT,
     IPC_SOCKET_ID,
-    IPC_SOCKET_PORT
-} = process.env
+    IPC_SOCKET_PORT,
+} = process.env;
 
 const IpcConfig = {
-    appspace        : IPC_APPSPACE || 'service_node-net.',
-    socketRoot      : IPC_SOCKET_ROOT || process.cwd(),
+    appspace        : IPC_APPSPACE || "service_node-net.",
+    delimiter       : "\f",
     id              : IPC_SOCKET_ID || os.hostname(),
-    networkHost     : 'localhost',
-    networkPort     : IPC_SOCKET_PORT ? parseInt(IPC_SOCKET_PORT) : 6565,
-    rawBuffer       : true,
-    delimiter       : '\f',
-    sync            : false,
-    silent          : false,
-    logInColor      : true,
-    logDepth        : 5,
-    maxConnections  : 100,
-    retry           : 500,
-    maxRetries      : false,
-    stopRetrying    : false,
-    unlink          : true,
     interfaces      : {
-        localAddress: false,
-        localPort   : false,
         family      : false,
         hints       : false,
+        localAddress: false,
+        localPort   : false,
         lookup      : false
-    }
-}
+    },
+    logDepth        : 5,
+    logInColor      : true,
+    maxConnections  : 100,
+    maxRetries      : false,
+    networkHost     : "localhost",
+    networkPort     : IPC_SOCKET_PORT ? parseInt(IPC_SOCKET_PORT,10) : 6565,
+    rawBuffer       : true,
+    retry           : 500,
+    silent          : false,
+    socketRoot      : IPC_SOCKET_ROOT || process.cwd(),
+    stopRetrying    : false,
+    sync            : false,
+    unlink          : true
+};
 
-export default IpcConfig
+export default IpcConfig;
