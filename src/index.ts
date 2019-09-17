@@ -1,14 +1,12 @@
-import util from 'util'
-import childProcess from 'child_process'
-import {getLogger} from './logger'
-import App from './application'
-import path from 'path'
+import {config} from "dotenv";
+import path from "path";
+import util from "util";
+import App from "./application";
+import {getLogger} from "./logger";
 
-
-
-let logger = getLogger()
-let executable = util.promisify(childProcess.exec)
-let app = new App(__dirname, logger)
-app.setLogger(logger)
-app.bootstrap()
-app.run()
+config();
+const logger = getLogger();
+const app = new App(path.dirname(__dirname), logger);
+app.setLogger(logger);
+app.bootstrap();
+app.run();

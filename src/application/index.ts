@@ -1,53 +1,49 @@
-import winston from 'winston'
-import GethExecutor from '../commands/executor/GethExecutor';
-import {Bootstrap} from '../params'
+import path from "path";
+import winston from "winston";
+import params from "../params";
 
-
-export default class App 
-{
+export default class App {
     private logger: winston.Logger;
-    private baseDir: string
-    private modules: Map<string,any>
+    private baseDir: string;
+    private storageDir: string;
+    private modules: Map<string, any>;
 
-    public constructor(baseDir: string, logger: winston.Logger)
-    {
-        this.logger = logger
-        this.baseDir = baseDir
-        this.modules = new Map<string,Object>()
+    public constructor(baseDir: string, logger: winston.Logger) {
+        this.logger = logger;
+        this.baseDir = baseDir;
+        this.modules = new Map<string, any>();
+        this.storageDir = path.join(this.baseDir, "/storage");
     }
 
-    public getBaseDir()
-    {
-        return this.baseDir
+    public getStorageDir() {
+        return this.storageDir;
     }
 
-    public setLogger(logger:winston.Logger)
-    {
-        this.logger = logger
+    public getBaseDir() {
+        return this.baseDir;
     }
 
-    public getLogger():winston.Logger
-    {
-        return this.logger
+    public setLogger(logger: winston.Logger) {
+        this.logger = logger;
     }
 
-    public addModule(name: string, module:any) 
-    {
-        this.modules.set(name,module)
+    public getLogger(): winston.Logger {
+        return this.logger;
     }
 
-    public getModule(name: string): any|undefined
-    {
-        return this.modules.get(name)
+    public addModule(name: string, module: any) {
+        this.modules.set(name, module);
     }
 
-    public bootstrap()
-    {
-        Bootstrap.forEach(fn => fn(this).bootstrap())
+    public getModule(name: string): any|undefined {
+        return this.modules.get(name);
     }
 
-    public run()
-    {
-        
+    public bootstrap() {
+        params.Bootstrap.forEach((fn) => fn(this).bootstrap());
+    }
+
+    public run() {
+        return;
     }
 }
