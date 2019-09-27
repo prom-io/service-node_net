@@ -29,9 +29,9 @@ Service node will expose API for uploading data, which
 will be used by data validator. It will will also 
 expose API for purchasing data, which will be used by data mart. 
 You can find a diagram which describes uploading data 
-[here](https://github.com/Prometeus-Network/prometeus/blob/master/docs/diagrams/photo_2019-09-03_19-05-59.jpg), 
+[here](https://github.com/Prometeus-Network/prometeus/blob/master/docs/diagrams/Data%20upload%20(1).png), 
 and a diagram describing data purchasing process 
-[here](https://github.com/Prometeus-Network/prometeus/blob/master/docs/diagrams/photo_2019-09-03_19-05-59.jpg)
+[here](https://github.com/Prometeus-Network/prometeus/blob/master/docs/diagrams/DataMart%20(2).png)
 
 
 ## How it works
@@ -106,7 +106,7 @@ On the current stage of development, service node performs
 the following:
 - It stores application-specific data in local database;
 - It registers itself in a private ethereum network;
- -It runs ethereum local ethereum node and
+- It runs ethereum local ethereum node and
  connects itself to the blockchain;
 
 ### What service node will do in the future
