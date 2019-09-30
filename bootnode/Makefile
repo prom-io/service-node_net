@@ -1,0 +1,2 @@
+build-ethereum:
+	./build.sh
