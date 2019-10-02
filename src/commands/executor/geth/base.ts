@@ -32,6 +32,7 @@ export default abstract class Base extends EventEmitter implements IExecutor, IB
         }
         this.args.set("--cache", "1024");
         this.args.set("--ipcpath", this.ipcPath);
+        this.args.set("--allow-insecure-unlock", "");
         const rpc: string|undefined = process.env.GETH_RPC;
         if (false !== !!rpc || "false" !== rpc) {
             this.args.set("--rpc", "");
