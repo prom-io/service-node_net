@@ -20,14 +20,14 @@ export class FilesController implements IAppController {
     
     public async uploadData(request: Request, response: Response) {
         const uploadFileDto: UploadFileDto = request.body;
-        const axiosResponse = await this.ddsApiClient.uploadFile({
+        const ddsResponse = await this.ddsApiClient.uploadFile({
             additional: uploadFileDto.additional,
             data: uploadFileDto.data,
             duration: uploadFileDto.duration,
             name: uploadFileDto.name
         });
-        const fileUploadResponse = unwrapDdsApiResponse(axiosResponse.data);
-        response.json({id: axiosResponse.data.data.id, ...fileUploadResponse});
+        const fileUploadResponse = unwrapDdsApiResponse(ddsResponse.data);
+        response.json({id: ddsResponse.data.data.id, ...fileUploadResponse});
     }
 
     public getRouter(): Router {
