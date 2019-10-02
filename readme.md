@@ -9,6 +9,7 @@
     - [Build and run process](#build-and-run-process)
         - [Running inside Docker](#running-inside-docker)
         - [Running outside Docker](#running-outside-docker)
+        - [Running unit tests](#running-unit-tests)
 - [Stages of project](#stages-of-project)
     - [What service node can do now](#what-service-node-can-do-now)
     - [What service node will do in the future](#what-service-node-will-do-in-the-future)
@@ -97,6 +98,15 @@ If you want to run service node outside docker container, you will need to perfo
 This will install dependencies required for Service node;
 - Run `npm run c`. This command will compile typescript;
 - Run `npm run start` to start the application.
+
+#### Running unit tests
+
+To run unit tests, do the following:
+
+- Make sure you have NodeJS installed;
+- Run `npm run install` to install all required dependencies 
+if they are not installed yet;
+- Run `npm run test`.
 
 ## Stages of project
 
