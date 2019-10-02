@@ -8,7 +8,7 @@
     "c": "tsc",
     "cw": "tsc -w",
     "tsl": "tslint --fix -c tslint.json 'src/**/*.ts'",
-    "test": "ts-mocha test/**/*.spec.ts"
+    "test": "ts-mocha --recursive 'test/**/*.spec.ts'"
   },
   "author": "",
   "license": "ISC",
