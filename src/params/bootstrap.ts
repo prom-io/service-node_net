@@ -33,7 +33,7 @@ const Bootstrap: Array<(app: App) => IBootstrap> = [
         return ipc;
     },
     (app) => {
-        const ddsApiClient = new DdsApiClient(app, "http://localhost:8080", null);
+        const ddsApiClient = new DdsApiClient(app, String(process.env.DDS_API_BASE_URL || "http://localhost:8080"));
         app.addModule("dds", ddsApiClient);
         return ddsApiClient;
     },

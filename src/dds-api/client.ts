@@ -21,12 +21,10 @@ export class DdsApiClient implements IBootstrap {
     private axiosInstance: AxiosInstance;
     private ddsApiUrl: string;
 
-    constructor(app: App, ddsApiUrl: string, axiosInstance: AxiosInstance | null) {
+    constructor(app: App, ddsApiUrl: string, axiosInstance: AxiosInstance =  Axios.create({baseURL: ddsApiUrl})) {
         this.app = app;
         this.ddsApiUrl = ddsApiUrl;
-        this.axiosInstance = axiosInstance || Axios.create({
-            baseURL: this.ddsApiUrl
-        });
+        this.axiosInstance = axiosInstance;
     }
 
     public bootstrap(): any {

@@ -1,7 +1,7 @@
 import {AxiosResponse} from "axios";
 import chai, {expect} from "chai";
 import {Router} from "express";
-import {match} from "sinon";
+import {fake, match} from "sinon";
 import sinonChai from "sinon-chai";
 import {deepEqual, instance, mock, when} from "ts-mockito";
 import {FilesController} from "../../../src/api/controllers";
@@ -23,7 +23,7 @@ const mockAxiosResponse = <T>(data: T, status?: number | undefined, statusText?:
 
 describe("FilesController tests", () => {
     describe("FilesController.uploadData()", () => {
-        it("Receives request and makes request to DDS API, then writes returned data to response", done => {
+        it("Receives request and makes request to DDS API, then writes returned data to response", async () => {
             const ddsApiClient = mock(DdsApiClient);
             const ddsApiClientInstance = instance(ddsApiClient);
 
@@ -70,10 +70,8 @@ describe("FilesController tests", () => {
             const response = mockResponse();
 
             const filesController = new FilesController(Router(), ddsApiClientInstance);
-            filesController.uploadData(request, response).then(() => {
-                expect(response.json).to.have.been.calledWith(match(expectedResult));
-                done();
-            });
+            await filesController.uploadData(request, response, fake);
+            expect(response.json).to.have.been.calledWith(match(expectedResult));
         })
     })
 });

@@ -1,4 +1,4 @@
-import {IsInt, IsNotEmpty, IsPositive, IsString} from "class-validator";
+import {IsInt, IsNotEmpty, IsNumber, IsPositive, IsString} from "class-validator";
 
 export class UploadFileDto {
     @IsInt({message: "Duration must be integer"})
@@ -19,7 +19,13 @@ export class UploadFileDto {
     public dataOwnerAddress: string;
 
     @IsNotEmpty({message: "Data price must be specified"})
-    @IsInt({message: "Data price must be integer"})
+    @IsNumber({
+            allowInfinity: false,
+            allowNaN: false
+        },
+        {
+            message: "Data price must be number"
+        })
     @IsPositive({message: "Data price must be positive"})
     public dataPrice: number;
 

@@ -1,10 +1,8 @@
-import {Express, json, Router} from "express";
+import {Express} from "express";
 import {anyFunction, instance, mock, verify, when} from "ts-mockito";
 import {Logger} from "winston";
 import {ExpressApp} from "../../src/api";
-import {FilesController} from "../../src/api/controllers";
 import App from "../../src/application";
-import {DdsApiClient} from "../../src/dds-api";
 
 describe("ExpressApp tests", () => {
     describe("ExpressApp.bootstrap()", () => {
