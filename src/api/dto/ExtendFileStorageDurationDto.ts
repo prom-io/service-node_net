@@ -1,15 +1,13 @@
-import {IsInt, IsNotEmpty, IsPositive} from "class-validator";
+import {IsDateString, IsNotEmpty} from "class-validator";
 
 export class ExtendFileStorageDurationDto{
-    @IsNotEmpty({message: "Duration must be present"})
-    @IsInt({message: "Duration must be an integer number"})
-    @IsPositive({message: "Duration must be positive"})
-    public duration: number;
+    @IsNotEmpty({message: "Keep until must be present"})
+    @IsDateString({message: "Keep until must be a string date"})
+    public keepUntil: string;
     public additional?: Map<string, string>;
 
-
-    constructor(duration: number, additional?: Map<string, string>) {
-        this.duration = duration;
+    constructor(keepUntil: string, additional?: Map<string, string>) {
+        this.keepUntil = keepUntil;
         this.additional = additional;
     }
 }

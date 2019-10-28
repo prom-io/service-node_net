@@ -1,9 +1,11 @@
 import {Express, json, Router} from "express";
 import App from "../application";
+import {BillingApiClient} from "../billing-api";
 import IBootstrapping from "../common/interfaces/IBootstrap";
 import {DdsApiClient} from "../dds-api";
-import {FilesController, IAppController} from "./controllers";
+import {FilesController, IAppController, PurchasesController} from "./controllers";
 import {exceptionHandler} from "./middlewares";
+import {FilesService, PurchasesService} from "./services";
 
 export class ExpressApp implements IBootstrapping {
     private readonly expressPort: number;
@@ -21,8 +23,8 @@ export class ExpressApp implements IBootstrapping {
         this.express.use(json({
             limit: 4194304000 // 500 megabytes
         }));
-        this.initializeControllers();
         this.express.use(exceptionHandler);
+        this.initializeControllers();
         this.express.listen(this.expressPort, () => {
             logger.info(`[express] Started express app at ${this.expressPort}`);
         });
@@ -30,10 +32,16 @@ export class ExpressApp implements IBootstrapping {
     }
 
     private initializeControllers() {
-        const controllers: IAppController[] = [];
         const ddsApiClient = this.app.getModule("dds") as DdsApiClient;
+        const billingApiClient = this.app.getModule("billing") as BillingApiClient;
 
-        controllers.push(new FilesController(Router(), ddsApiClient));
+        const filesService = new FilesService(ddsApiClient, billingApiClient);
+        const purchasesService = new PurchasesService(ddsApiClient, billingApiClient);
+
+        const controllers: IAppController[] = [
+            new FilesController(Router(), filesService),
+            new PurchasesController(Router(), purchasesService)
+        ];
 
         controllers.forEach(controller => {
             this.express.use("/api/v1", controller.getRouter())
