@@ -1,4 +1,3 @@
-import {boundClass} from "autobind-decorator";
 import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {BillingApiClient} from "../../billing-api";
@@ -6,7 +5,6 @@ import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from 
 import {ExtendFileStorageDurationDto, UploadFileDto} from "../dto";
 import {BillingApiErrorException, DdsErrorException, FileNotFoundException} from "../exceptions";
 
-@boundClass
 export class FilesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;

@@ -1,11 +1,9 @@
-import {boundClass} from "autobind-decorator";
 import {AxiosError} from "axios";
 import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, FileInfo} from "../../dds-api";
 import {PurchaseDataDto} from "../dto";
 import {BillingApiErrorException, DdsErrorException, FileNotFoundException} from "../exceptions";
 
-@boundClass
 export class PurchasesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;
