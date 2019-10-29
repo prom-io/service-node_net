@@ -1,6 +1,5 @@
 import {config} from "dotenv";
 import path from "path";
-import util from "util";
 import App from "./application";
 import {getLogger} from "./logger";
 

@@ -10,7 +10,7 @@ import {
     ExtendFileStorageRequest,
     ExtendFileStorageResponse,
     NotifyPaymentStatusRequest,
-    NotifyPaymentStatusResponse,
+    NotifyPaymentStatusResponse, StorageResponse,
     UploadFileRequest,
     UploadFileResponse,
     wrapDdsApiRequest
@@ -181,6 +181,34 @@ describe("DdsApiClient tests", () => {
                     expect(error.response!.data.message).to.be.equal("Error occurred");
                     done();
                 });
+        })
+    });
+
+    describe("DdsApiClient.getFileStorageInfo()", () => {
+        it("Makes request to DDS API and resolves response from it", async () => {
+            const expectedResponse: StorageResponse = {
+                size: 1000000
+            };
+
+            mockAxios.onGet("/files/storage").reply(200, {
+                ...expectedResponse
+            });
+
+            const actualResponse = await ddsApiClient.getStorageInfo();
+
+            assert(JSON.stringify(expectedResponse) === JSON.stringify(actualResponse.data));
+        });
+
+        it("Rejects and forwards error if response to DDS API resulted in error", done => {
+            mockAxios.onGet("/files/storage").reply(500, {
+                message: "Error occurred"
+            });
+
+            ddsApiClient.getStorageInfo().catch((error: AxiosError) => {
+                expect(error.response!.status).to.be.equal(500);
+                expect(error.response!.data.message).to.be.equal("Error occurred");
+                done();
+            })
         })
     })
 });

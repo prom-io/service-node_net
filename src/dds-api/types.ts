@@ -42,7 +42,7 @@ export type UploadFileResponse = FileInfo;
 
 export interface ExtendFileStorageRequest {
     duration: number,
-    additional: Map<string, string>
+    additional?: Map<string, string>
 }
 
 export type ExtendFileStorageResponse = FileInfo;
@@ -61,5 +61,9 @@ export interface NotifyPaymentStatusResponse {
 
 export interface PeriodPaymentResponse {
     amount: number,
+    size: number
+}
+
+export interface StorageResponse {
     size: number
 }

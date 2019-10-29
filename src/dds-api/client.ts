@@ -10,7 +10,7 @@ import {
     FileInfo,
     NotifyPaymentStatusRequest,
     NotifyPaymentStatusResponse,
-    PeriodPaymentResponse,
+    PeriodPaymentResponse, StorageResponse,
     UploadFileRequest,
     UploadFileResponse
 } from "./types";
@@ -21,12 +21,10 @@ export class DdsApiClient implements IBootstrap {
     private axiosInstance: AxiosInstance;
     private ddsApiUrl: string;
 
-    constructor(app: App, ddsApiUrl: string, axiosInstance: AxiosInstance | null) {
+    constructor(app: App, ddsApiUrl: string, axiosInstance: AxiosInstance =  Axios.create({baseURL: ddsApiUrl})) {
         this.app = app;
         this.ddsApiUrl = ddsApiUrl;
-        this.axiosInstance = axiosInstance || Axios.create({
-            baseURL: this.ddsApiUrl
-        });
+        this.axiosInstance = axiosInstance;
     }
 
     public bootstrap(): any {
@@ -87,6 +85,10 @@ export class DdsApiClient implements IBootstrap {
                 to: dateFormat(to, mask)
             }
         })
+    }
+
+    public getStorageInfo(): AxiosPromise<DdsApiResponse<StorageResponse>> {
+        return this.axiosInstance.get("/files/storage")
     }
 
     public getFileInfo(fileId: string): AxiosPromise<DdsApiResponse<FileInfo>> {
