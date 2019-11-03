@@ -9,8 +9,8 @@ export interface PayForDataUploadRequest {
     mime_type: string,
     service_node: string,
     data_owner: string,
-    data_price: number,
-    sum: number
+    data_price: string,
+    sum: string
 }
 
 export interface PayForDataPurchaseRequest {
