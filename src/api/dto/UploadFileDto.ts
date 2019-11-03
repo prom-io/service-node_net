@@ -1,4 +1,5 @@
-import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
+import {IsDateString, IsInt, IsNotEmpty, IsString, Matches} from "class-validator";
+import {FileMetadata} from "./FileMetadata";
 
 export class UploadFileDto {
     @IsNotEmpty({message: "Keep until date must be specified"})
@@ -12,7 +13,7 @@ export class UploadFileDto {
     @IsNotEmpty({message: "Data must not be empty"})
     @IsString({message: "Data must be represented as base64-encoded string"})
     public data: string;
-    public additional: Map<string, string>;
+    public additional: FileMetadata;
 
     @IsNotEmpty({message: "Data owner address must be specified"})
     @IsString({message: "Data owner address must be string"})
@@ -36,18 +37,28 @@ export class UploadFileDto {
     @IsInt({message: "File size must be integer number which represents size in bytes"})
     public size: number;
 
-    @IsNotEmpty({message: "Data price must be specified"})
-    @IsNumber({
-            allowInfinity: false,
-            allowNaN: false
-        },
+    @IsNotEmpty({message: "Data owner address must be specified"})
+    @IsString({message: "Data owner address must be string"})
+    @Matches(
+        new RegExp("^0x[a-fA-F0-9]{40}$"),
         {
-            message: "Data price must be number"
-        })
-    @IsPositive({message: "Data price must be positive"})
-    public dataPrice: number;
+            message: "Service node address must be valid Ethereum address"
+        }
+    )
+    public serviceNodeAddress: string;
 
-    constructor(keepUntil: string, name: string, data: string, additional: Map<string, string>, dataOwnerAddress: string, extension: string, mimeType: string, size: number, dataPrice: number) {
+    @IsNotEmpty({message: "Data owner address must be specified"})
+    @IsString({message: "Data owner address must be string"})
+    @Matches(
+        new RegExp("^0x[a-fA-F0-9]{40}$"),
+        {
+            message: "Data validator address must be valid Ethereum address"
+        }
+    )
+    public dataValidatorAddress: string;
+
+
+    constructor(keepUntil: string, name: string, data: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.data = data;
@@ -56,6 +67,7 @@ export class UploadFileDto {
         this.extension = extension;
         this.mimeType = mimeType;
         this.size = size;
-        this.dataPrice = dataPrice;
+        this.serviceNodeAddress = serviceNodeAddress;
+        this.dataValidatorAddress = dataValidatorAddress;
     }
 }

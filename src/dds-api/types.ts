@@ -1,5 +1,7 @@
 // tslint:disable:interface-name
 
+import {FileMetadata} from "../api/dto";
+
 export enum DdsApiType {
     FILE = "file",
     PAYMENT = "payment",
@@ -35,7 +37,7 @@ export interface UploadFileRequest {
     name: string,
     data: string,
     duration: number | undefined,
-    additional: Map<string, string>
+    additional: FileMetadata
 }
 
 export type UploadFileResponse = FileInfo;

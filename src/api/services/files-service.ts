@@ -18,15 +18,16 @@ export class FilesService {
         return new Promise(async (resolve, reject) => {
             try {
                 const ddsResponse = await this.uploadFileToDds(uploadFileDto);
+                const price = ddsResponse.data.attributes.price;
                 await this.payForDataUpload(
                     uploadFileDto,
-                    ddsResponse.data.attributes.price,
+                    price,
                     ddsResponse.data.id
                 );
                 await this.ddsApiClient.notifyPaymentStatus({
                     status: "success",
                     file_id: ddsResponse.data.id,
-                    amount: ddsResponse.data.attributes.price
+                    amount: price
                 });
                 resolve(ddsResponse);
             } catch (error) {
@@ -66,9 +67,9 @@ export class FilesService {
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
         const additional = uploadFileDto.additional;
-        additional.set("extension", uploadFileDto.extension);
-        additional.set("size", uploadFileDto.size.toString(10));
-        additional.set("mimeType", uploadFileDto.mimeType);
+        additional.extension = uploadFileDto.extension;
+        additional.size = uploadFileDto.size.toString(10);
+        additional.mimeType = uploadFileDto.mimeType;
 
         return new Promise((resolve, reject) => {
             this.ddsApiClient.uploadFile({
@@ -81,7 +82,18 @@ export class FilesService {
                     ), new Date()),
                 name: uploadFileDto.name
             }).then(({data}) => {
-                resolve(data);
+                resolve({
+                    ...data,
+                    data: {
+                        ...data.data,
+                        attributes: {
+                            ...data.data.attributes,
+                            price: data.data.attributes.price / 10000 // Gotta do this replacement because stub DDS service returns
+                                                                      // 100.5 ETH as storage price which is too huge.
+                                                                      // TODO: remove this replacement when DDS starts to make actual calculations
+                        }
+                    }
+                });
             }).catch((ddsError: AxiosError) => {
                 if (ddsError.response) {
                     reject(new DdsErrorException(`DDS responded with ${ddsError.response.status} status`, ddsError.response.status))
@@ -95,19 +107,20 @@ export class FilesService {
     private payForDataUpload(uploadFileDto: UploadFileDto, price: number, fileId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.billingApiClient.payForDataUpload({
-                sum: price,
+                sum: "" + price,
                 data_owner: uploadFileDto.dataOwnerAddress,
-                owner: "",
-                data_price: uploadFileDto.dataPrice,
+                owner: uploadFileDto.dataValidatorAddress,
+                data_price: "" + price,
                 extension: uploadFileDto.extension,
                 id: fileId,
                 mime_type: uploadFileDto.mimeType,
                 name: uploadFileDto.name,
-                service_node: "",
+                service_node: uploadFileDto.serviceNodeAddress,
                 size: uploadFileDto.size
             }).then(() => {
                 resolve();
             }).catch((billingError: AxiosError) => {
+                console.log(billingError);
                 if (billingError.response) {
                     reject(new BillingApiErrorException(`Billing API responded with ${billingError.response.status} status`))
                 } else {

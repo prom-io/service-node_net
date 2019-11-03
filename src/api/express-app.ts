@@ -1,11 +1,13 @@
+import cors from "cors";
 import {Express, json, Router} from "express";
 import App from "../application";
 import {BillingApiClient} from "../billing-api";
+import DB from "../common/DB";
 import IBootstrapping from "../common/interfaces/IBootstrap";
 import {DdsApiClient} from "../dds-api";
-import {FilesController, IAppController, PurchasesController} from "./controllers";
+import {AccountsController, FilesController, IAppController, PurchasesController} from "./controllers";
 import {exceptionHandler} from "./middlewares";
-import {FilesService, PurchasesService} from "./services";
+import {AccountsService, FilesService, PurchasesService} from "./services";
 
 export class ExpressApp implements IBootstrapping {
     private readonly expressPort: number;
@@ -23,8 +25,9 @@ export class ExpressApp implements IBootstrapping {
         this.express.use(json({
             limit: 4194304000 // 500 megabytes
         }));
-        this.express.use(exceptionHandler);
+        this.express.use(cors());
         this.initializeControllers();
+        this.express.use(exceptionHandler);
         this.express.listen(this.expressPort, () => {
             logger.info(`[express] Started express app at ${this.expressPort}`);
         });
@@ -34,13 +37,16 @@ export class ExpressApp implements IBootstrapping {
     private initializeControllers() {
         const ddsApiClient = this.app.getModule("dds") as DdsApiClient;
         const billingApiClient = this.app.getModule("billing") as BillingApiClient;
+        const dataStore = (this.app.getModule("db") as DB).getStore();
 
         const filesService = new FilesService(ddsApiClient, billingApiClient);
         const purchasesService = new PurchasesService(ddsApiClient, billingApiClient);
+        const accountsService = new AccountsService(billingApiClient, dataStore);
 
         const controllers: IAppController[] = [
             new FilesController(Router(), filesService),
-            new PurchasesController(Router(), purchasesService)
+            new PurchasesController(Router(), purchasesService),
+            new AccountsController(Router(), accountsService)
         ];
 
         controllers.forEach(controller => {

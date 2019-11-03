@@ -1,6 +1,7 @@
 import express from "express";
 import {ExpressApp} from "../api";
 import App from "../application";
+import {BillingApiClient} from "../billing-api";
 import GethExecutor from "../commands/executor/geth";
 import {DdsApiClient} from "../dds-api";
 import IPCListener from "../ipc";
@@ -38,7 +39,12 @@ const Bootstrap: Array<(app: App) => IBootstrap> = [
         return ddsApiClient;
     },
     (app) => {
-        const expressApp = new ExpressApp(app, express(), 3000);
+        const billingApiClient = new BillingApiClient(app, String(process.env.BILLING_API_BASE_URL || "http://localhost:3001"));
+        app.addModule("billing", billingApiClient);
+        return billingApiClient;
+    },
+    (app) => {
+        const expressApp = new ExpressApp(app, express(), Number(process.env.SERVICE_NODE_API_PORT) || 3002);
         app.addModule("api", expressApp);
         return expressApp;
     }

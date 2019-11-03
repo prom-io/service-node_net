@@ -1,3 +1,4 @@
+import {boundClass} from "autobind-decorator";
 import Axios, {AxiosInstance, AxiosPromise} from "axios";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
@@ -8,6 +9,7 @@ import {
     RegisterAccountRequest
 } from "./types";
 
+@boundClass
 export class BillingApiClient implements IBootstrap {
     private app: App;
     private axiosInstance: AxiosInstance;
@@ -24,26 +26,26 @@ export class BillingApiClient implements IBootstrap {
     }
 
     public payForDataUpload(payForDataUploadRequest: PayForDataUploadRequest): AxiosPromise<GenericBillingApiResponse> {
-        return this.axiosInstance.post('/pay/data/upload', payForDataUploadRequest);
+        return this.axiosInstance.post('/data/upload/pay', payForDataUploadRequest);
     }
 
     public payForDataPurchase(payForDataPurchaseRequest: PayForDataPurchaseRequest): AxiosPromise<GenericBillingApiResponse> {
-        return this.axiosInstance.post('/pay/data/sell', payForDataPurchaseRequest);
+        return this.axiosInstance.post('/data/buy', payForDataPurchaseRequest);
     }
 
     public registerDataValidator(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/register/data-validator", registerAccountRequest);
+        return this.axiosInstance.post("/account/register/data-validator", registerAccountRequest);
     }
 
     public registerDataMart(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/register/data-mart", registerAccountRequest);
+        return this.axiosInstance.post("/account/register/data-mart", registerAccountRequest);
     }
 
     public registerDataOwner(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/register/data-owner");
+        return this.axiosInstance.post("/account/register/data-owner", registerAccountRequest);
     }
 
     public registerServiceNode(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/register/service-node");
+        return this.axiosInstance.post("/account/register/service-node", registerAccountRequest);
     }
 }
