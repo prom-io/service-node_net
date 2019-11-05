@@ -1,7 +1,7 @@
 import {boundClass} from "autobind-decorator";
 import {NextFunction, Request, Response, Router} from "express";
 import {unwrapDdsApiResponse} from "../../dds-api";
-import {ExtendFileStorageDurationDto, UploadFileDto} from "../dto";
+import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto, UploadFileDto} from "../dto";
 import {validationMiddleware} from "../middlewares";
 import {FilesService} from "../services";
 import {IAppController} from "./IAppController";
@@ -21,6 +21,8 @@ export class FilesController implements IAppController {
         this.router.post("/files", validationMiddleware(UploadFileDto), this.uploadData);
         this.router.patch("/files/:fileId", validationMiddleware(ExtendFileStorageDurationDto), this.extendStorageDuration);
         this.router.get("/files/:fileId/info", this.getFileInfo);
+        this.router.post("/files/local", validationMiddleware(CreateLocalFileRecordDto), this.createLocalFileRecord);
+        this.router.post("/files/local/:localFileId/chunk", validationMiddleware(UploadChunkDto), this.loadLocalFileChunk);
     }
     
     public async uploadData(request: Request, response: Response, next: NextFunction) {
@@ -43,6 +45,20 @@ export class FilesController implements IAppController {
 
         this.filesService.getFileInfo(fileId)
             .then(result => response.json({id: result.data.id, ...unwrapDdsApiResponse(result)}))
+            .catch(error => next(error));
+    }
+
+    public async createLocalFileRecord(request: Request, response: Response, next: NextFunction) {
+        this.filesService.createLocalFileRecord(request.body)
+            .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async loadLocalFileChunk(request: Request, response: Response, next: NextFunction) {
+        const localFileId = request.params.localFileId;
+
+        this.filesService.writeFileChunk(localFileId, request.body)
+            .then(result => response.json(result))
             .catch(error => next(error));
     }
 

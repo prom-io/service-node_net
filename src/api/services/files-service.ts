@@ -1,17 +1,77 @@
 import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
+import fileSystem from "fs";
+import DataStore from "nedb";
+import uuid from "uuid/v4"
 import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
-import {ExtendFileStorageDurationDto, UploadFileDto} from "../dto";
-import {BillingApiErrorException, DdsErrorException, FileNotFoundException} from "../exceptions";
+import {
+    CreateLocalFileRecordDto,
+    ExtendFileStorageDurationDto,
+    LocalFileRecordDto,
+    UploadChunkDto,
+    UploadFileDto
+} from "../dto";
+import {LocalFileRecord} from "../entity";
+import {
+    BillingApiErrorException,
+    DdsErrorException,
+    FileNotFoundException,
+    LocalFileNotFoundException
+} from "../exceptions";
 
 export class FilesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;
+    private repository: DataStore;
 
-    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient) {
+    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient, repository: DataStore) {
         this.ddsApiClient = ddsApiClient;
         this.billingApiClient = billingApiClient;
+        this.repository = repository;
+    }
+
+    public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
+        return new Promise<LocalFileRecordDto>((resolve, reject) => {
+            const fileId = uuid();
+            const localPath = `${process.env.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
+            fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
+            const localFileRecord: LocalFileRecord = {
+                _type: "localFileRecord",
+                _id: fileId,
+                localPath,
+                extension: createLocalFileRecordDto.extension,
+                metadata: createLocalFileRecordDto.additional,
+                mimeType: createLocalFileRecordDto.mimeType,
+                name: createLocalFileRecordDto.name,
+                size: createLocalFileRecordDto.size,
+                dataValidatorAddress: createLocalFileRecordDto.dataValidatorAddress,
+                serviceNodeAddress: createLocalFileRecordDto.serviceNodeAddress,
+                dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress
+            };
+
+            this.repository.insert(localFileRecord, (error, document) => resolve({
+                size: document.size,
+                extension: document.extension,
+                name: document.name,
+                id: document._id!,
+                mimeType: localFileRecord.mimeType,
+                metadata: localFileRecord.metadata
+            }));
+        })
+    }
+
+    public writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{success: boolean}> {
+        return new Promise<{success: boolean}>((resolve, reject) => {
+            this.repository.findOne<LocalFileRecord>({_type: "localFileRecord", _id: localFileId}, ((error, document) => {
+                if (document == null) {
+                    reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
+                } else {
+                    fileSystem.appendFileSync(document.localPath, uploadChunkDto.chunkData);
+                    resolve({success: true});
+                }
+            }))
+        })
     }
 
     public uploadData(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {

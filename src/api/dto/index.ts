@@ -4,3 +4,6 @@ export * from "./PurchaseDataDto";
 export * from "./RegisterAccountDto";
 export * from "./AccountDto";
 export * from "./FileMetadata";
+export * from "./CreateLocalFileRecordDto";
+export * from "./UploadChunkDto";
+export * from "./LocalFileRecordDto";
