@@ -21,5 +21,10 @@ export interface LocalFileRecord extends IBaseEntity {
     metadata: FileMetadata,
     serviceNodeAddress: string,
     dataValidatorAddress: string,
-    dataOwnerAddress: string
+    dataOwnerAddress: string,
+    keepUntil: string,
+    uploadedToDds: boolean,
+    failed: boolean,
+    ddsId?: string,
+    price?: number
 }

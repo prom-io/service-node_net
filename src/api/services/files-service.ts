@@ -7,6 +7,7 @@ import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
     CreateLocalFileRecordDto,
+    DdsFileUploadCheckResponse,
     ExtendFileStorageDurationDto,
     LocalFileRecordDto,
     UploadChunkDto,
@@ -47,7 +48,10 @@ export class FilesService {
                 size: createLocalFileRecordDto.size,
                 dataValidatorAddress: createLocalFileRecordDto.dataValidatorAddress,
                 serviceNodeAddress: createLocalFileRecordDto.serviceNodeAddress,
-                dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress
+                dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress,
+                keepUntil: createLocalFileRecordDto.keepUntil,
+                uploadedToDds: false,
+                failed: false
             };
 
             this.repository.insert(localFileRecord, (error, document) => resolve({
@@ -74,7 +78,60 @@ export class FilesService {
         })
     }
 
-    public uploadData(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
+    public uploadLocalFileToDds(localFileId: string): Promise<{success: boolean}> {
+        return new Promise<{success: boolean}>((resolve, reject) => {
+            this.repository.findOne<LocalFileRecord>({_type: "localFileRecord", _id: localFileId}, ((error, document) => {
+                if (document == null) {
+                    reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
+                } else {
+                    const data = fileSystem.readFileSync(document.localPath).toString();
+                    const uploadFileDto = UploadFileDto.fromObject({
+                        dataValidatorAddress: document.dataValidatorAddress,
+                        serviceNodeAddress: document.serviceNodeAddress,
+                        mimeType: document.mimeType,
+                        additional: document.metadata,
+                        size: document.size,
+                        extension: document.extension,
+                        keepUntil: document.keepUntil,
+                        data,
+                        name: document.name,
+                        dataOwnerAddress: document.dataOwnerAddress
+                    });
+                    this.uploadData(uploadFileDto, localFileId);
+                    resolve({success: true});
+                }
+            }))
+        })
+    }
+
+    public checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
+        return new Promise<DdsFileUploadCheckResponse>((resolve, reject) => {
+            this.repository.findOne<LocalFileRecord>({_type: "localFileRecord", _id: localFileId}, (error, document) => {
+                if (document === null) {
+                    reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`))
+                } else {
+                    if (document.uploadedToDds) {
+                        resolve({
+                            ddsFileId: document.ddsId,
+                            price: document.price,
+                            failed: false,
+                            fullyUploaded: true
+                        })
+                    } else if (document.failed) {
+                        resolve({
+                            fullyUploaded: false,
+                            failed: true
+                        })
+                    } else {
+                        resolve({fullyUploaded: false, failed: false});
+                    }
+                }
+            })
+        })
+    }
+
+    // tslint:disable-next-line:no-unnecessary-initializer
+    public uploadData(uploadFileDto: UploadFileDto, localFileId: string | undefined = undefined): Promise<DdsApiResponse<FileInfo>> {
         return new Promise(async (resolve, reject) => {
             try {
                 const ddsResponse = await this.uploadFileToDds(uploadFileDto);
@@ -89,8 +146,40 @@ export class FilesService {
                     file_id: ddsResponse.data.id,
                     amount: price
                 });
+                
+                if (localFileId) {
+                    this.repository.update<LocalFileRecord>(
+                        {
+                            _id:
+                            localFileId
+                        },
+                        {
+                            $set: {
+                                failed: false,
+                                price: ddsResponse.data.attributes.price,
+                                ddsId: ddsResponse.data.id,
+                                uploadedToDds: true
+                            }
+                        })
+                }
+                
                 resolve(ddsResponse);
             } catch (error) {
+                console.log("Error occurred when uploading file");
+                if (error.response) {
+                    console.log(error.response);
+                }
+                if (localFileId) {
+                    this.repository.update<LocalFileRecord>({
+                            _id: localFileId
+                        },
+                        {
+                            $set: {
+                                failed: true
+                            }
+                        })
+                }
+                
                 reject(error);
             }
         })
@@ -155,6 +244,7 @@ export class FilesService {
                     }
                 });
             }).catch((ddsError: AxiosError) => {
+                console.log(ddsError);
                 if (ddsError.response) {
                     reject(new DdsErrorException(`DDS responded with ${ddsError.response.status} status`, ddsError.response.status))
                 } else {

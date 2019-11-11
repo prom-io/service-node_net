@@ -23,6 +23,8 @@ export class FilesController implements IAppController {
         this.router.get("/files/:fileId/info", this.getFileInfo);
         this.router.post("/files/local", validationMiddleware(CreateLocalFileRecordDto), this.createLocalFileRecord);
         this.router.post("/files/local/:localFileId/chunk", validationMiddleware(UploadChunkDto), this.loadLocalFileChunk);
+        this.router.post("/files/local/:localFileId/to-dds", this.uploadLocalFileToDds);
+        this.router.get("/files/local/:localFileId/is-fully-uploaded", this.checkIfFileUploadedToDds);
     }
     
     public async uploadData(request: Request, response: Response, next: NextFunction) {
@@ -58,6 +60,22 @@ export class FilesController implements IAppController {
         const localFileId = request.params.localFileId;
 
         this.filesService.writeFileChunk(localFileId, request.body)
+            .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async uploadLocalFileToDds(request: Request, response: Response, next: NextFunction) {
+        const localFileId = request.params.localFileId;
+
+        this.filesService.uploadLocalFileToDds(localFileId)
+            .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async checkIfFileUploadedToDds(request: Request, response: Response, next: NextFunction) {
+        const {localFileId} = request.params;
+
+        this.filesService.checkIfLocalFileFullyUploadedToDds(localFileId)
             .then(result => response.json(result))
             .catch(error => next(error));
     }

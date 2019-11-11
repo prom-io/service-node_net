@@ -2,6 +2,21 @@ import {IsDateString, IsInt, IsNotEmpty, IsString, Matches} from "class-validato
 import {FileMetadata} from "./FileMetadata";
 
 export class UploadFileDto {
+    public static fromObject(source: IUploadFileDto): UploadFileDto {
+        return new UploadFileDto(
+            source.keepUntil,
+            source.name,
+            source.data,
+            source.additional,
+            source.dataOwnerAddress,
+            source.extension,
+            source.mimeType,
+            source.size,
+            source.serviceNodeAddress,
+            source.dataValidatorAddress
+        )
+    }
+
     @IsNotEmpty({message: "Keep until date must be specified"})
     @IsDateString({message: "Keep until must be date string"})
     public keepUntil: string;
@@ -71,3 +86,7 @@ export class UploadFileDto {
         this.dataValidatorAddress = dataValidatorAddress;
     }
 }
+
+type IUploadFileDto = {
+    [key in keyof UploadFileDto]: UploadFileDto[key]
+};

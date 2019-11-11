@@ -7,3 +7,4 @@ export * from "./FileMetadata";
 export * from "./CreateLocalFileRecordDto";
 export * from "./UploadChunkDto";
 export * from "./LocalFileRecordDto";
+export * from "./DdsFileUploadCheckResponse";
