@@ -17,9 +17,15 @@ import {LocalFileRecord} from "../entity";
 import {
     BillingApiErrorException,
     DdsErrorException,
-    FileNotFoundException,
+    FileNotFoundException, LocalFileDeletionException, LocalFileHasAlreadyBeenDeletedException,
     LocalFileNotFoundException
 } from "../exceptions";
+import {
+    createDdsFileUploadCheckResponseFromLocalFileRecord,
+    createLocalFileRecordDtoToLocalFileRecord,
+    createUploadFileDtoFromLocalFileRecord,
+    localFileRecordToLocalFileRecordDto
+} from "../utils";
 
 export class FilesService {
     private ddsApiClient: DdsApiClient;
@@ -37,38 +43,58 @@ export class FilesService {
             const fileId = uuid();
             const localPath = `${process.env.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
             fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
-            const localFileRecord: LocalFileRecord = {
-                _type: "localFileRecord",
-                _id: fileId,
-                localPath,
-                extension: createLocalFileRecordDto.extension,
-                metadata: createLocalFileRecordDto.additional,
-                mimeType: createLocalFileRecordDto.mimeType,
-                name: createLocalFileRecordDto.name,
-                size: createLocalFileRecordDto.size,
-                dataValidatorAddress: createLocalFileRecordDto.dataValidatorAddress,
-                serviceNodeAddress: createLocalFileRecordDto.serviceNodeAddress,
-                dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress,
-                keepUntil: createLocalFileRecordDto.keepUntil,
-                uploadedToDds: false,
-                failed: false
-            };
+            const localFileRecord: LocalFileRecord = createLocalFileRecordDtoToLocalFileRecord(
+                createLocalFileRecordDto,
+                fileId,
+                localPath
+            );
 
-            this.repository.insert(localFileRecord, (error, document) => resolve({
-                size: document.size,
-                extension: document.extension,
-                name: document.name,
-                id: document._id!,
-                mimeType: localFileRecord.mimeType,
-                metadata: localFileRecord.metadata
-            }));
+            this.repository.insert(localFileRecord, (error, document) => resolve(localFileRecordToLocalFileRecordDto(document)));
+        })
+    }
+
+    public deleteLocalFileRecord(localFileId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.repository.findOne<LocalFileRecord>({_type: "localFileRecord", _id: localFileId}, (error, document) => {
+                if (document === null) {
+                    reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
+                } else {
+                    if (document.deletedLocally) {
+                        reject(new LocalFileHasAlreadyBeenDeletedException(`Local file with id ${localFileId} has already been deleted`));
+                        return;
+                    }
+
+                    if (fileSystem.existsSync(document.localPath)) {
+                        fileSystem.unlink(document.localPath, fileSystemError => {
+                            if (fileSystemError) {
+                                console.log(fileSystemError);
+                            }
+
+                            this.repository.update(
+                                {
+                                    _id: localFileId
+                                },
+                                {
+                                    $set: {
+                                        deletedLocally: true
+                                    }
+                                }
+                            );
+                        });
+
+                        resolve();
+                    } else {
+                        reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
+                    }
+                }
+            })
         })
     }
 
     public writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{success: boolean}> {
         return new Promise<{success: boolean}>((resolve, reject) => {
             this.repository.findOne<LocalFileRecord>({_type: "localFileRecord", _id: localFileId}, ((error, document) => {
-                if (document == null) {
+                if (document === null) {
                     reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
                 } else {
                     fileSystem.appendFileSync(document.localPath, uploadChunkDto.chunkData);
@@ -85,18 +111,7 @@ export class FilesService {
                     reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`));
                 } else {
                     const data = fileSystem.readFileSync(document.localPath).toString();
-                    const uploadFileDto = UploadFileDto.fromObject({
-                        dataValidatorAddress: document.dataValidatorAddress,
-                        serviceNodeAddress: document.serviceNodeAddress,
-                        mimeType: document.mimeType,
-                        additional: document.metadata,
-                        size: document.size,
-                        extension: document.extension,
-                        keepUntil: document.keepUntil,
-                        data,
-                        name: document.name,
-                        dataOwnerAddress: document.dataOwnerAddress
-                    });
+                    const uploadFileDto = createUploadFileDtoFromLocalFileRecord(document, data);
                     this.uploadData(uploadFileDto, localFileId);
                     resolve({success: true});
                 }
@@ -110,21 +125,7 @@ export class FilesService {
                 if (document === null) {
                     reject(new LocalFileNotFoundException(`Could not find local file with id ${localFileId}`))
                 } else {
-                    if (document.uploadedToDds) {
-                        resolve({
-                            ddsFileId: document.ddsId,
-                            price: document.price,
-                            failed: false,
-                            fullyUploaded: true
-                        })
-                    } else if (document.failed) {
-                        resolve({
-                            fullyUploaded: false,
-                            failed: true
-                        })
-                    } else {
-                        resolve({fullyUploaded: false, failed: false});
-                    }
+                    resolve(createDdsFileUploadCheckResponseFromLocalFileRecord(document));
                 }
             })
         })

@@ -7,5 +7,6 @@ export interface LocalFileRecordDto {
     extension: string,
     mimeType: string,
     size: number,
-    metadata: FileMetadata
+    metadata: FileMetadata,
+    deletedLocally: boolean
 }

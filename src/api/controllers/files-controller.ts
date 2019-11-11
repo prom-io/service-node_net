@@ -25,6 +25,7 @@ export class FilesController implements IAppController {
         this.router.post("/files/local/:localFileId/chunk", validationMiddleware(UploadChunkDto), this.loadLocalFileChunk);
         this.router.post("/files/local/:localFileId/to-dds", this.uploadLocalFileToDds);
         this.router.get("/files/local/:localFileId/is-fully-uploaded", this.checkIfFileUploadedToDds);
+        this.router.delete("/files/local/:localFileId", this.deleteLocalFile);
     }
     
     public async uploadData(request: Request, response: Response, next: NextFunction) {
@@ -77,6 +78,17 @@ export class FilesController implements IAppController {
 
         this.filesService.checkIfLocalFileFullyUploadedToDds(localFileId)
             .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async deleteLocalFile(request: Request, response: Response, next: NextFunction) {
+        const {localFileId} = request.params;
+
+        this.filesService.deleteLocalFileRecord(localFileId)
+            .then(() => {
+                response.status(204);
+                response.send();
+            })
             .catch(error => next(error));
     }
 

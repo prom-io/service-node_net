@@ -7,3 +7,5 @@ export * from "./InvalidAccountTypeException";
 export * from "./AddressIsAlreadyRegisteredException";
 export * from "./AccountNotFoundException";
 export * from "./LocalFileNotFoundException";
+export * from "./LocalFileHasAlreadyBeenDeletedException";
+export * from "./LocalFileDeletionException";
