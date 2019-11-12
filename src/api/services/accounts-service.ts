@@ -109,4 +109,22 @@ export class AccountsService {
                 })
         })
     }
+
+    public getBalanceOfAllAccounts(): Promise<{[address: string]: number}> {
+        return new Promise<{[address: string]: number}>((resolve, reject) => {
+            this.repository.find<Account>({_type: "account"}, async (error, accounts) => {
+                try {
+                    const result: {[address: string]: number} = {};
+                    Promise.all(accounts.map(async account => ({
+                        address: account.address,
+                        balance: (await this.getBalanceOfAccount(account.address)).balance
+                    })))
+                        .then(balances => balances.forEach(balance => result[balance.address] = balance.balance))
+                        .then(() => resolve(result));
+                } catch (billingError) {
+                    reject(billingError);
+                }
+            })
+        })
+    }
 }

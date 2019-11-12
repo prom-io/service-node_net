@@ -20,6 +20,7 @@ export class AccountsController implements IAppController {
         this.router.post("/accounts", validationMiddleware(RegisterAccountDto), this.registerAccount);
         this.router.get("/accounts", this.findLocalAccounts);
         this.router.get("/accounts/:address/balance", this.getBalanceOfAccount);
+        this.router.get("/accounts/balances", this.getBalancesOfAllAccounts)
     }
 
     public getRouter(): Router {
@@ -44,6 +45,12 @@ export class AccountsController implements IAppController {
         const {address} = request.params;
 
         this.accountsService.getBalanceOfAccount(address)
+            .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async getBalancesOfAllAccounts(request: Request, response: Response, next: NextFunction) {
+        this.accountsService.getBalanceOfAllAccounts()
             .then(result => response.json(result))
             .catch(error => next(error));
     }
