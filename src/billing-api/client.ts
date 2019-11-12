@@ -3,6 +3,7 @@ import Axios, {AxiosInstance, AxiosPromise} from "axios";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
+    BalanceResponse,
     GenericBillingApiResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
@@ -47,5 +48,9 @@ export class BillingApiClient implements IBootstrap {
 
     public registerServiceNode(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
         return this.axiosInstance.post("/account/register/service-node", registerAccountRequest);
+    }
+
+    public getBalanceOfAddress(address: string): AxiosPromise<BalanceResponse> {
+        return this.axiosInstance.get(`/wallet/balance/${address}`);
     }
 }

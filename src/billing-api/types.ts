@@ -26,3 +26,7 @@ export interface RegisterAccountRequest {
 export interface GenericBillingApiResponse {
     status: string
 }
+
+export interface BalanceResponse {
+    balance: string
+}

@@ -1,7 +1,7 @@
 import {AxiosError, AxiosPromise} from "axios";
 import DataStore from "nedb";
 import {BillingApiClient, RegisterAccountRequest} from "../../billing-api";
-import {AccountDto, RegisterAccountDto} from "../dto";
+import {AccountDto, BalanceDto, RegisterAccountDto} from "../dto";
 import {Account} from "../entity";
 import {
     AccountNotFoundException,
@@ -90,6 +90,23 @@ export class AccountsService {
                     reject(new AccountNotFoundException(`Could not find account with type ${type} and address ${address}`));
                 }
             })
+        })
+    }
+
+    public getBalanceOfAccount(accountAddress: string): Promise<BalanceDto> {
+        return new Promise<BalanceDto>((resolve, reject) => {
+            this.billingApiClient.getBalanceOfAddress(accountAddress)
+                .then(({data}) => resolve({
+                    ...data,
+                    balance: Number(data.balance)
+                }))
+                .catch((error: AxiosError) => {
+                    if (error.response) {
+                        reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
+                    } else {
+                        reject(new BillingApiErrorException("Billing API is unreachable."))
+                    }
+                })
         })
     }
 }

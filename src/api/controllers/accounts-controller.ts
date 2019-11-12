@@ -19,6 +19,7 @@ export class AccountsController implements IAppController {
     public initializeRoutes(): void {
         this.router.post("/accounts", validationMiddleware(RegisterAccountDto), this.registerAccount);
         this.router.get("/accounts", this.findLocalAccounts);
+        this.router.get("/accounts/:address/balance", this.getBalanceOfAccount);
     }
 
     public getRouter(): Router {
@@ -36,6 +37,14 @@ export class AccountsController implements IAppController {
     public async findLocalAccounts(request: Request, response: Response, next: NextFunction) {
         this.accountsService.findLocalAccounts()
             .then(accounts => response.json(accounts))
+            .catch(error => next(error));
+    }
+
+    public async getBalanceOfAccount(request: Request, response: Response, next: NextFunction) {
+        const {address} = request.params;
+
+        this.accountsService.getBalanceOfAccount(address)
+            .then(result => response.json(result))
             .catch(error => next(error));
     }
 }
