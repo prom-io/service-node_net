@@ -1,5 +1,5 @@
 import {CreateLocalFileRecordDto, DdsFileUploadCheckResponse, LocalFileRecordDto, UploadFileDto} from "../dto";
-import {LocalFileRecord} from "../entity";
+import {EntityType, LocalFileRecord} from "../entity";
 
 export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFileRecord, data: string): UploadFileDto => {
     return UploadFileDto.fromObject({
@@ -39,7 +39,7 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
 
 export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordDto: CreateLocalFileRecordDto, id: string, localPath: string): LocalFileRecord => {
     return {
-        _type: "localFileRecord",
+        _type: EntityType.LOCAL_FILE_RECORD,
         _id: id,
         localPath,
         extension: createLocalFileRecordDto.extension,

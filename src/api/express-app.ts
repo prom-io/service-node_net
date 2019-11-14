@@ -7,6 +7,7 @@ import IBootstrapping from "../common/interfaces/IBootstrap";
 import {DdsApiClient} from "../dds-api";
 import {AccountsController, FilesController, IAppController, PurchasesController} from "./controllers";
 import {exceptionHandler} from "./middlewares";
+import {AccountsRepository} from "./repositories";
 import {AccountsService, FilesService, PurchasesService} from "./services";
 
 export class ExpressApp implements IBootstrapping {
@@ -41,7 +42,7 @@ export class ExpressApp implements IBootstrapping {
 
         const filesService = new FilesService(ddsApiClient, billingApiClient, dataStore);
         const purchasesService = new PurchasesService(ddsApiClient, billingApiClient);
-        const accountsService = new AccountsService(billingApiClient, dataStore);
+        const accountsService = new AccountsService(billingApiClient, dataStore, new AccountsRepository(dataStore));
 
         const controllers: IAppController[] = [
             new FilesController(Router(), filesService),

@@ -151,8 +151,7 @@ export class FilesService {
                 if (localFileId) {
                     this.repository.update<LocalFileRecord>(
                         {
-                            _id:
-                            localFileId
+                            _id: localFileId
                         },
                         {
                             $set: {

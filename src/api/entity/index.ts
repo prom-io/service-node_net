@@ -2,8 +2,14 @@
 
 import {FileMetadata} from "../dto";
 
+export enum EntityType {
+    ACCOUNT = "account",
+    LOCAL_FILE_RECORD = "localFileRecord",
+    DATA_OWNERS_OF_DATA_VALIDATOR = "dataOwnersOfDataValidator"
+}
+
 export interface IBaseEntity {
-    _type: string,
+    _type: EntityType,
     _id?: string
 }
 
@@ -28,4 +34,9 @@ export interface LocalFileRecord extends IBaseEntity {
     ddsId?: string,
     price?: number,
     deletedLocally: boolean
+}
+
+export interface DataOwnersOfDataValidator extends IBaseEntity {
+    dataValidatorAddress: string,
+    dataOwners: string[]
 }
