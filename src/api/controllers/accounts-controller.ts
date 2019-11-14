@@ -1,6 +1,6 @@
 import {boundClass} from "autobind-decorator";
 import {NextFunction, Request, Response, Router} from "express";
-import {RegisterAccountDto} from "../dto";
+import {CreateDataOwnerDto, RegisterAccountDto} from "../dto";
 import {validationMiddleware} from "../middlewares";
 import {AccountsService} from "../services";
 import {IAppController} from "./IAppController";
@@ -20,7 +20,8 @@ export class AccountsController implements IAppController {
         this.router.post("/accounts", validationMiddleware(RegisterAccountDto), this.registerAccount);
         this.router.get("/accounts", this.findLocalAccounts);
         this.router.get("/accounts/:address/balance", this.getBalanceOfAccount);
-        this.router.get("/accounts/balances", this.getBalancesOfAllAccounts)
+        this.router.get("/accounts/balances", this.getBalancesOfAllAccounts);
+        this.router.post("/accounts/data-owner", validationMiddleware(CreateDataOwnerDto), this.registerDataOwner);
     }
 
     public getRouter(): Router {
@@ -53,5 +54,13 @@ export class AccountsController implements IAppController {
         this.accountsService.getBalanceOfAllAccounts()
             .then(result => response.json(result))
             .catch(error => next(error));
+    }
+
+    public async registerDataOwner(request: Request, response: Response, next: NextFunction) {
+        const createDataOwnerDto: CreateDataOwnerDto = request.body;
+
+        this.accountsService.registerDataValidator(createDataOwnerDto)
+            .then(result => response.json(result))
+            .catch(error => next(error))
     }
 }

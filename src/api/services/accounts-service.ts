@@ -1,7 +1,6 @@
 import {AxiosError, AxiosPromise} from "axios";
-import DataStore from "nedb";
 import {BillingApiClient, RegisterAccountRequest} from "../../billing-api";
-import {AccountDto, BalanceDto, CreateDataOwnerDto, RegisterAccountDto} from "../dto";
+import {AccountDto, BalanceDto, CreateDataOwnerDto, RegisterAccountDto, DataOwnersOfDataValidatorDto} from "../dto";
 import {Account, DataOwnersOfDataValidator, EntityType} from "../entity";
 import {
     AddressIsAlreadyRegisteredException,
@@ -69,8 +68,8 @@ export class AccountsService {
         })
     }
 
-    public registerDataValidator(createDataOwnerDto: CreateDataOwnerDto): Promise<DataOwnersOfDataValidator> {
-        return new Promise<DataOwnersOfDataValidator>((resolve, reject) => {
+    public registerDataValidator(createDataOwnerDto: CreateDataOwnerDto): Promise<DataOwnersOfDataValidatorDto> {
+        return new Promise<DataOwnersOfDataValidatorDto>((resolve, reject) => {
             this.billingApiClient.registerDataOwner({owner: createDataOwnerDto.address})
                 .then(() => {
                     this.dataOwnersOfDataValidatorRepository.findByDataValidatorAddress(createDataOwnerDto.dataValidatorAddress)
@@ -78,18 +77,29 @@ export class AccountsService {
                             if (dataOwnersOfDataValidator) {
                                 dataOwnersOfDataValidator.dataOwners.push(createDataOwnerDto.address);
                                 this.dataOwnersOfDataValidatorRepository.save(dataOwnersOfDataValidator)
-                                    .then(() => resolve(dataOwnersOfDataValidator));
+                                    .then(saved => resolve({dataOwners: saved.dataOwners}));
                             } else {
                                const newDocument: DataOwnersOfDataValidator = {
                                     _type: EntityType.DATA_OWNERS_OF_DATA_VALIDATOR,
                                     dataOwners: [createDataOwnerDto.address],
-                                    dataValidatorAddress: createDataOwnerDto.address
+                                    dataValidatorAddress: createDataOwnerDto.dataValidatorAddress
                                 };
                                this.dataOwnersOfDataValidatorRepository.save(newDocument)
-                                   .then(saved => resolve(saved));
+                                   .then(saved => resolve({dataOwners: saved.dataOwners}));
                             }
                         })
                 })
+                .catch((error: AxiosError) => {
+                    if (error.response) {
+                        if (error.response.status === 400) {
+                            reject(new AddressIsAlreadyRegisteredException(`Address ${createDataOwnerDto.address} has already been registered`))
+                        } else {
+                            reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`))
+                        }
+                    } else {
+                        reject(new BillingApiErrorException("Billing API is unreachable"));
+                    }
+                });
         })
     }
 
