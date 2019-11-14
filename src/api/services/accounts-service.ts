@@ -1,6 +1,6 @@
 import {AxiosError, AxiosPromise} from "axios";
 import {BillingApiClient, RegisterAccountRequest} from "../../billing-api";
-import {AccountDto, BalanceDto, CreateDataOwnerDto, RegisterAccountDto, DataOwnersOfDataValidatorDto} from "../dto";
+import {AccountDto, BalanceDto, CreateDataOwnerDto, DataOwnersOfDataValidatorDto, RegisterAccountDto} from "../dto";
 import {Account, DataOwnersOfDataValidator, EntityType} from "../entity";
 import {
     AddressIsAlreadyRegisteredException,
@@ -101,6 +101,17 @@ export class AccountsService {
                     }
                 });
         })
+    }
+
+    public findDataOwnersOfDataValidator(dataValidatorAddress: string): Promise<DataOwnersOfDataValidatorDto> {
+        return this.dataOwnersOfDataValidatorRepository.findByDataValidatorAddress(dataValidatorAddress)
+            .then(dataOwnersOfDataValidator => {
+                if (dataOwnersOfDataValidator) {
+                    return {dataOwners: dataOwnersOfDataValidator.dataOwners}
+                } else {
+                    return {dataOwners: []}
+                }
+            })
     }
 
     public findLocalAccounts(): Promise<AccountDto[]> {

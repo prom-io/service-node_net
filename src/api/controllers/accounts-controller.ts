@@ -21,7 +21,8 @@ export class AccountsController implements IAppController {
         this.router.get("/accounts", this.findLocalAccounts);
         this.router.get("/accounts/:address/balance", this.getBalanceOfAccount);
         this.router.get("/accounts/balances", this.getBalancesOfAllAccounts);
-        this.router.post("/accounts/data-owner", validationMiddleware(CreateDataOwnerDto), this.registerDataOwner);
+        this.router.post("/accounts/data-owners", validationMiddleware(CreateDataOwnerDto), this.registerDataOwner);
+        this.router.get("/accounts/data-validators/:address/data-owners", this.getDataOwnersOfDataValidator);
     }
 
     public getRouter(): Router {
@@ -61,6 +62,14 @@ export class AccountsController implements IAppController {
 
         this.accountsService.registerDataValidator(createDataOwnerDto)
             .then(result => response.json(result))
-            .catch(error => next(error))
+            .catch(error => next(error));
+    }
+
+    public async getDataOwnersOfDataValidator(request: Request, response: Response, next: NextFunction) {
+        const {address} = request.params;
+
+        this.accountsService.findDataOwnersOfDataValidator(address)
+            .then(result => response.json(result))
+            .catch(error => next(error));
     }
 }
