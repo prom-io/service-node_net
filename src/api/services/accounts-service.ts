@@ -4,23 +4,21 @@ import {BillingApiClient, RegisterAccountRequest} from "../../billing-api";
 import {AccountDto, BalanceDto, CreateDataOwnerDto, RegisterAccountDto} from "../dto";
 import {Account, DataOwnersOfDataValidator, EntityType} from "../entity";
 import {
-    AccountNotFoundException,
     AddressIsAlreadyRegisteredException,
     BillingApiErrorException,
     InvalidAccountTypeException
 } from "../exceptions";
-import {AccountsRepository} from "../repositories";
+import {AccountsRepository, DataOwnersOfDataValidatorRepository} from "../repositories";
 
 export class AccountsService {
     private readonly billingApiClient: BillingApiClient;
-    private readonly repository: DataStore;
     private readonly accountsRepository: AccountsRepository;
+    private readonly dataOwnersOfDataValidatorRepository: DataOwnersOfDataValidatorRepository;
 
-
-    constructor(billingApiClient: BillingApiClient, repository: DataStore, accountsRepository: AccountsRepository) {
+    constructor(billingApiClient: BillingApiClient, accountsRepository: AccountsRepository, dataOwnersOfDataValidatorRepository: DataOwnersOfDataValidatorRepository) {
         this.billingApiClient = billingApiClient;
-        this.repository = repository;
         this.accountsRepository = accountsRepository;
+        this.dataOwnersOfDataValidatorRepository = dataOwnersOfDataValidatorRepository;
     }
 
     public registerAccount(registerAccountDto: RegisterAccountDto): Promise<void> {
@@ -75,30 +73,22 @@ export class AccountsService {
         return new Promise<DataOwnersOfDataValidator>((resolve, reject) => {
             this.billingApiClient.registerDataOwner({owner: createDataOwnerDto.address})
                 .then(() => {
-                    this.repository.findOne<DataOwnersOfDataValidator>({
-                        _type: EntityType.DATA_OWNERS_OF_DATA_VALIDATOR,
-                        dataValidatorAddress: createDataOwnerDto.dataValidatorAddress
-                    }, (error, document) => {
-                        if (document === null) {
-                            const dataOwnersOfDataValidator: DataOwnersOfDataValidator = {
-                                _type: EntityType.DATA_OWNERS_OF_DATA_VALIDATOR,
-                                dataOwners: [createDataOwnerDto.address],
-                                dataValidatorAddress: createDataOwnerDto.address
-                            };
-                            this.repository.insert(dataOwnersOfDataValidator, (savingError, saved) => resolve(saved));
-                        } else {
-                            document.dataOwners.push(createDataOwnerDto.address);
-                            this.repository.update({
-                                    _id: document._id,
-                                },
-                                {
-                                    $set: {
-                                        dataOwners: document.dataOwners
-                                    }
-                                });
-                            resolve(document);
-                        }
-                    })
+                    this.dataOwnersOfDataValidatorRepository.findByDataValidatorAddress(createDataOwnerDto.dataValidatorAddress)
+                        .then(dataOwnersOfDataValidator => {
+                            if (dataOwnersOfDataValidator) {
+                                dataOwnersOfDataValidator.dataOwners.push(createDataOwnerDto.address);
+                                this.dataOwnersOfDataValidatorRepository.save(dataOwnersOfDataValidator)
+                                    .then(() => resolve(dataOwnersOfDataValidator));
+                            } else {
+                               const newDocument: DataOwnersOfDataValidator = {
+                                    _type: EntityType.DATA_OWNERS_OF_DATA_VALIDATOR,
+                                    dataOwners: [createDataOwnerDto.address],
+                                    dataValidatorAddress: createDataOwnerDto.address
+                                };
+                               this.dataOwnersOfDataValidatorRepository.save(newDocument)
+                                   .then(saved => resolve(saved));
+                            }
+                        })
                 })
         })
     }
@@ -139,22 +129,5 @@ export class AccountsService {
                     return result;
                 })
         })
-
-        /*
-        return new Promise<{[address: string]: number}>((resolve, reject) => {
-            this.repository.find<Account>({_type: EntityType.ACCOUNT}, async (error, accounts) => {
-                try {
-                    const result: {[address: string]: number} = {};
-                    Promise.all(accounts.map(async account => ({
-                        address: account.address,
-                        balance: (await this.getBalanceOfAccount(account.address)).balance
-                    })))
-                        .then(balances => balances.forEach(balance => result[balance.address] = balance.balance))
-                        .then(() => resolve(result));
-                } catch (billingError) {
-                    reject(billingError);
-                }
-            })
-        })*/
     }
 }
