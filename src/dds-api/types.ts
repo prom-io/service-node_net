@@ -30,7 +30,7 @@ export interface FileInfo {
     name: string,
     price: number,
     duration: number,
-    additional: Map<string, string>
+    additional: FileMetadata
 }
 
 export interface UploadFileRequest {

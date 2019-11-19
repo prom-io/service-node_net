@@ -19,6 +19,7 @@ export class FilesController implements IAppController {
 
     public initializeRoutes(): void {
         this.router.post("/files", validationMiddleware(UploadFileDto), this.uploadData);
+        this.router.get("/files/:fileId", this.downloadFile);
         this.router.patch("/files/:fileId", validationMiddleware(ExtendFileStorageDurationDto), this.extendStorageDuration);
         this.router.get("/files/:fileId/info", this.getFileInfo);
         this.router.post("/files/local", validationMiddleware(CreateLocalFileRecordDto), this.createLocalFileRecord);
@@ -32,6 +33,12 @@ export class FilesController implements IAppController {
         const uploadFileDto: UploadFileDto = request.body;
         this.filesService.uploadData(uploadFileDto)
             .then(result => response.json({id: result.data.id, ...unwrapDdsApiResponse(result)}))
+            .catch(error => next(error));
+    }
+
+    public async downloadFile(request: Request, response: Response, next: NextFunction) {
+        const {fileId} = request.params;
+        this.filesService.getFile(fileId, response)
             .catch(error => next(error));
     }
 

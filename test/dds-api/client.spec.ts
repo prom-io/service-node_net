@@ -38,7 +38,7 @@ describe("DdsApiClient tests", () => {
 
     describe("DdsApiClient.uploadFile()", () => {
         const uploadFileRequest: UploadFileRequest = {
-            additional: new Map<string, string>(),
+            additional: {},
             data: "File data",
             duration: 226600,
             name: "data.txt"
@@ -48,7 +48,7 @@ describe("DdsApiClient tests", () => {
             const ddsApiResponse: DdsApiResponse<UploadFileResponse> = {
                 data: {
                     attributes: {
-                        additional: new Map<string, string>(),
+                        additional: {},
                         duration: 226600,
                         name: "data.txt",
                         price: 100
@@ -98,7 +98,7 @@ describe("DdsApiClient tests", () => {
             const ddsApiResponse: DdsApiResponse<ExtendFileStorageResponse> = {
                 data: {
                     attributes: {
-                        additional: new Map<string, string>(),
+                        additional: {},
                         duration: 22660,
                         name: "data.txt",
                         price: 200,
