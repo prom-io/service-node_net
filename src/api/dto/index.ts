@@ -11,3 +11,5 @@ export * from "./DdsFileUploadCheckResponse";
 export * from "./BalanceDto";
 export * from "./CreateDataOwnerDto";
 export * from "./DataOwnersOfDataValidatorDto";
+export * from "./PaginationDto";
+export * from "./DdsFileDto";

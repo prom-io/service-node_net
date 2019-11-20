@@ -1,4 +1,5 @@
 import DataStore from "nedb";
+import {PaginationDto} from "../dto";
 import {EntityType, LocalFileRecord} from "../entity";
 import {LocalFileNotFoundException} from "../exceptions";
 
@@ -30,6 +31,22 @@ export class FilesRepository {
                     resolve(document);
                 }
             })
+        })
+    }
+
+    public findAllNotFailed(paginationRequest: PaginationDto): Promise<LocalFileRecord[]> {
+        const limit = paginationRequest.size;
+        const offset = (paginationRequest.page - 1) * limit + 1;
+
+        return new Promise<LocalFileRecord[]>(resolve => {
+            this.dataStore.find<LocalFileRecord>({
+                _type: EntityType.LOCAL_FILE_RECORD,
+                uploadedToDds: true,
+                failed: false
+            })
+                .skip(offset)
+                .limit(limit)
+                .exec((error, documents) => resolve(documents));
         })
     }
 }

@@ -1,7 +1,13 @@
 import {boundClass} from "autobind-decorator";
 import {NextFunction, Request, Response, Router} from "express";
 import {unwrapDdsApiResponse} from "../../dds-api";
-import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto, UploadFileDto} from "../dto";
+import {
+    CreateLocalFileRecordDto,
+    ExtendFileStorageDurationDto,
+    PaginationDto,
+    UploadChunkDto,
+    UploadFileDto
+} from "../dto";
 import {validationMiddleware} from "../middlewares";
 import {FilesService} from "../services";
 import {IAppController} from "./IAppController";
@@ -18,6 +24,7 @@ export class FilesController implements IAppController {
     }
 
     public initializeRoutes(): void {
+        this.router.get("/files", this.findAllFiles);
         this.router.post("/files", validationMiddleware(UploadFileDto), this.uploadData);
         this.router.get("/files/:fileId", this.downloadFile);
         this.router.patch("/files/:fileId", validationMiddleware(ExtendFileStorageDurationDto), this.extendStorageDuration);
@@ -27,6 +34,25 @@ export class FilesController implements IAppController {
         this.router.post("/files/local/:localFileId/to-dds", this.uploadLocalFileToDds);
         this.router.get("/files/local/:localFileId/is-fully-uploaded", this.checkIfFileUploadedToDds);
         this.router.delete("/files/local/:localFileId", this.deleteLocalFile);
+    }
+
+    public async findAllFiles(request: Request, response: Response, next: NextFunction) {
+        const pageParameter: string | undefined = request.query.page;
+        const sizeParameter: string | undefined = request.query.size;
+
+        const paginationRequest: PaginationDto = {page: 1, size: 1000};
+
+        if (pageParameter !== undefined && !isNaN(Number(pageParameter))) {
+            paginationRequest.page = Number(pageParameter);
+        }
+
+        if (sizeParameter !== undefined && !isNaN(Number(sizeParameter))) {
+            paginationRequest.size = Number(sizeParameter);
+        }
+
+        this.filesService.findAllFiles(paginationRequest)
+            .then(result => response.json(result))
+            .catch(error => next(error));
     }
     
     public async uploadData(request: Request, response: Response, next: NextFunction) {
