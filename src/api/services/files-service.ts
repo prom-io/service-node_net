@@ -2,7 +2,6 @@ import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import fileSystem from "fs";
-import DataStore from "nedb";
 import uuid from "uuid/v4"
 import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
@@ -19,9 +18,7 @@ import {
     BillingApiErrorException,
     DdsErrorException,
     FileNotFoundException,
-    LocalFileDeletionException,
-    LocalFileHasAlreadyBeenDeletedException,
-    LocalFileNotFoundException
+    LocalFileHasAlreadyBeenDeletedException
 } from "../exceptions";
 import {FilesRepository} from "../repositories";
 import {
