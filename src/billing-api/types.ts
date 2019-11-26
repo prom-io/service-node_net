@@ -44,3 +44,8 @@ export interface BillingFilesCollectionResponse {
     count: number,
     data: BillingFileResponse[]
 }
+
+export interface RegisterDataOwnerRequest {
+    dataValidator: string,
+    dataOwner: string
+}

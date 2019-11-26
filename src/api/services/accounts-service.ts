@@ -34,11 +34,8 @@ export class AccountsService {
                 case "SERVICE_NODE":
                     targetMethod = this.billingApiClient.registerServiceNode;
                     break;
-                case "DATA_OWNER":
-                    targetMethod = this.billingApiClient.registerDataOwner;
-                    break;
                 default:
-                    reject(new InvalidAccountTypeException(`Invalid account type. Expected one of the [DATA_MART, DATA_VALIDATOR, DATA_OWNER], got ${registerAccountDto.type}`))
+                    reject(new InvalidAccountTypeException(`Invalid account type. Expected one of the [DATA_MART, DATA_VALIDATOR, SERVICE_NODE], got ${registerAccountDto.type}`))
             }
 
             targetMethod = targetMethod!;
@@ -70,7 +67,10 @@ export class AccountsService {
 
     public registerDataValidator(createDataOwnerDto: CreateDataOwnerDto): Promise<DataOwnersOfDataValidatorDto> {
         return new Promise<DataOwnersOfDataValidatorDto>((resolve, reject) => {
-            this.billingApiClient.registerDataOwner({owner: createDataOwnerDto.address})
+            this.billingApiClient.registerDataOwner({
+                dataOwner: createDataOwnerDto.address,
+                dataValidator: createDataOwnerDto.dataValidatorAddress
+            })
                 .then(() => {
                     this.dataOwnersOfDataValidatorRepository.findByDataValidatorAddress(createDataOwnerDto.dataValidatorAddress)
                         .then(dataOwnersOfDataValidator => {

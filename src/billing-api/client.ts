@@ -8,7 +8,8 @@ import {
     GenericBillingApiResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
-    RegisterAccountRequest
+    RegisterAccountRequest,
+    RegisterDataOwnerRequest
 } from "./types";
 
 @boundClass
@@ -43,8 +44,8 @@ export class BillingApiClient implements IBootstrap {
         return this.axiosInstance.post("/account/register/data-mart", registerAccountRequest);
     }
 
-    public registerDataOwner(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/account/register/data-owner", registerAccountRequest);
+    public registerDataOwner(registerDataOwnerRequest: RegisterDataOwnerRequest): AxiosPromise<void> {
+        return this.axiosInstance.post("/account/register/data-owner", registerDataOwnerRequest);
     }
 
     public registerServiceNode(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
