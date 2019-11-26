@@ -50,7 +50,7 @@ export class PurchasesService {
         return new Promise<any>((resolve, reject) => {
             this.billingApiClient.payForDataPurchase({
                 dataValidator: purchaseDataDto.dataValidatorAddress,
-                owner: purchaseDataDto.dataOwnerAddress,
+                owner: purchaseDataDto.dataMartAddress,
                 sum: dataPrice
             }).then((response: any) => {
                 resolve(response);

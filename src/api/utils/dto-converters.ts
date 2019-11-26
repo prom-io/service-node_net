@@ -83,5 +83,6 @@ export const localFileRecordToDdsFileDto = (localFileRecord: LocalFileRecord): D
     mimeType: localFileRecord.mimeType,
     price: localFileRecord.price!,
     serviceNode: localFileRecord.serviceNodeAddress,
-    size: localFileRecord.size
+    size: localFileRecord.size,
+    name: localFileRecord.name
 });

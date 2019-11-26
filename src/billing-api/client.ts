@@ -4,6 +4,7 @@ import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
     BalanceResponse,
+    BillingFilesCollectionResponse,
     GenericBillingApiResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
@@ -52,5 +53,9 @@ export class BillingApiClient implements IBootstrap {
 
     public getBalanceOfAddress(address: string): AxiosPromise<BalanceResponse> {
         return this.axiosInstance.get(`/wallet/balance/${address}`);
+    }
+
+    public getFiles(page: number, pageSize: number): AxiosPromise<BillingFilesCollectionResponse> {
+        return this.axiosInstance.get(`/files/paginate/${page}/${pageSize}`);
     }
 }

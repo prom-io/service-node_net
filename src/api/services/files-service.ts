@@ -175,6 +175,7 @@ export class FilesService {
     }
 
     public getFile(fileId: string, httpResponse: Response): Promise<any> {
+        console.log(`Retrieving file with id ${fileId}`);
         return this.ddsApiClient.getFile(fileId)
             .then(({data}) => {
                 httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);

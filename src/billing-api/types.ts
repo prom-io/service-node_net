@@ -30,3 +30,17 @@ export interface GenericBillingApiResponse {
 export interface BalanceResponse {
     balance: string
 }
+
+export interface BillingFileResponse {
+    id: string,
+    name: string,
+    size: number,
+    file_extension: string,
+    mime_type: string,
+    owner: string
+}
+
+export interface BillingFilesCollectionResponse {
+    count: number,
+    data: BillingFileResponse[]
+}

@@ -5,15 +5,15 @@ export class PurchaseDataDto {
     @IsString({message: "File ID must be string"})
     public fileId: string;
 
-    @IsNotEmpty({message: "Data owner address must be present"})
-    @IsString({message: "Data owner address must be string"})
+    @IsNotEmpty({message: "Data mart address must be present"})
+    @IsString({message: "Data mart address must be string"})
     @Matches(
         new RegExp("^0x[a-fA-F0-9]{40}$"),
         {
-            message: "Data owner address must be valid Ethereum address"
+            message: "Data mart address must be valid Ethereum address"
         }
     )
-    public dataOwnerAddress: string;
+    public dataMartAddress: string;
 
     @IsNotEmpty({message: "Data validator address must be present"})
     @IsString({message: "Data validator address must be string"})
@@ -25,9 +25,9 @@ export class PurchaseDataDto {
     )
     public dataValidatorAddress: string;
 
-    constructor(fileId: string, dataOwnerAddress: string, dataValidatorAddress: string) {
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string) {
         this.fileId = fileId;
-        this.dataOwnerAddress = dataOwnerAddress;
+        this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
     }
 }

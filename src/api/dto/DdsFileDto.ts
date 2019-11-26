@@ -11,5 +11,6 @@ export interface DdsFileDto {
     extension: string,
     mimeType: string,
     size: number,
-    price: number
+    price: number,
+    name: string
 }
