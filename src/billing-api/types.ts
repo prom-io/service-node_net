@@ -14,9 +14,10 @@ export interface PayForDataUploadRequest {
 }
 
 export interface PayForDataPurchaseRequest {
+    id: string,
     owner: string,
-    dataValidator: string,
-    sum: number
+    data_validator: string,
+    sum: string
 }
 
 export interface RegisterAccountRequest {
