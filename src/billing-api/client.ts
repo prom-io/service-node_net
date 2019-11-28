@@ -5,6 +5,7 @@ import IBootstrap from "../common/interfaces/IBootstrap";
 import {
     BalanceResponse,
     BillingFilesCollectionResponse,
+    DataOwnersResponse,
     GenericBillingApiResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
@@ -58,5 +59,9 @@ export class BillingApiClient implements IBootstrap {
 
     public getFiles(page: number, pageSize: number): AxiosPromise<BillingFilesCollectionResponse> {
         return this.axiosInstance.get(`/files/paginate/${page}/${pageSize}`);
+    }
+
+    public getDataOwnersOfDataValidator(dataValidatorAddress: string): AxiosPromise<DataOwnersResponse> {
+        return this.axiosInstance.get(`/account/owners/${dataValidatorAddress}`);
     }
 }

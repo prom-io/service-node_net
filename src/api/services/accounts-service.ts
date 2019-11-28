@@ -104,14 +104,17 @@ export class AccountsService {
     }
 
     public findDataOwnersOfDataValidator(dataValidatorAddress: string): Promise<DataOwnersOfDataValidatorDto> {
-        return this.dataOwnersOfDataValidatorRepository.findByDataValidatorAddress(dataValidatorAddress)
-            .then(dataOwnersOfDataValidator => {
-                if (dataOwnersOfDataValidator) {
-                    return {dataOwners: dataOwnersOfDataValidator.dataOwners}
-                } else {
-                    return {dataOwners: []}
-                }
-            })
+        return new Promise<DataOwnersOfDataValidatorDto>((resolve, reject) => {
+            this.billingApiClient.getDataOwnersOfDataValidator(dataValidatorAddress)
+                .then(({data}) => resolve({dataOwners: data.address}))
+                .catch((error: AxiosError) => {
+                    if (error.response) {
+                        reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
+                    } else {
+                        reject(new BillingApiErrorException("Billing API is unreachable"));
+                    }
+                })
+        })
     }
 
     public findLocalAccounts(): Promise<AccountDto[]> {

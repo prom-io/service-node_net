@@ -50,3 +50,7 @@ export interface RegisterDataOwnerRequest {
     dataValidator: string,
     dataOwner: string
 }
+
+export interface DataOwnersResponse {
+    address: string[]
+}
