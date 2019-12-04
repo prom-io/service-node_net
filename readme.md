@@ -39,7 +39,7 @@ and a diagram describing data purchasing process
 
 Upon starting, service node performs the following steps:
 - Distributed data storage node initialization (read [more](https://github.com/Prometeus-Network/dds) about the storage system, 
-currently based on the fork of FileCoin);
+currently based on the [fork](https://github.com/filecoin-project/lotus) of FileCoin project);
 - Ethereum network connection. Service node registers 
 itself in a private ethereum network by performing 
 a call to a boot node. After that, it downloads blockchain 
