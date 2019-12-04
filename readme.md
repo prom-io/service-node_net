@@ -112,21 +112,18 @@ if they are not installed yet;
 
 ### What service node can do now
 
-On the current stage of development, service node performs 
-the following:
-- It stores application-specific data in local database;
-- It registers itself in a private ethereum network;
-- It runs ethereum local ethereum node and
- connects itself to the blockchain;
+On the current stage of development, service node has got the following:
+- Ethereum smart contracts;
+- Self registration in a private ethereum testnet;
+- API for uploading the data to the distributed data storage (used by Data Validator);
+- API for purchasing the data (used by Data Mart).
+
 
 ### What service node will do in the future
 
-During next stages of development, the 
-following functionality will be added to the service node:
-- Integration with distributed data storage API;
-- Integration with blockchain and smart contracts;
-- API for uploading data to the distributed data storage. 
-It will be used by data validator;
-- API for purchasing data. It will be used by data mart;
+During next stages of development, the following functionality will be added to the service node:
+- Ethereum main net;
+- Improved API for updating of the previously uploaded data into the distributed data storage (used by data validator).
+
 
 
