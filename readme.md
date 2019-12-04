@@ -38,9 +38,8 @@ and a diagram describing data purchasing process
 ## How it works
 
 Upon starting, service node performs the following steps:
-- Local database initialization. It is used for 
-storing application-specific data such as
-information about genesis block and account initialization;
+- Distributed data storage node initialization (read [more](https://github.com/Prometeus-Network/dds) about the storage system, 
+currently based on the fork of FileCoin);
 - Ethereum network connection. Service node registers 
 itself in a private ethereum network by performing 
 a call to a boot node. After that, it downloads blockchain 
