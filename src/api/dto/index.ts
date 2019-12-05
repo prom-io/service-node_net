@@ -13,3 +13,4 @@ export * from "./CreateDataOwnerDto";
 export * from "./DataOwnersOfDataValidatorDto";
 export * from "./PaginationDto";
 export * from "./DdsFileDto";
+export * from "./TransactionDto";

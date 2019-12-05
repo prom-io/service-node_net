@@ -3,14 +3,13 @@ import Axios, {AxiosInstance, AxiosPromise} from "axios";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
-    BalanceResponse,
-    BillingFilesCollectionResponse,
+    BalanceResponse, BillingFileResponse,
     DataOwnersResponse,
-    GenericBillingApiResponse,
+    GenericBillingApiResponse, PaginatedResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
     RegisterAccountRequest,
-    RegisterDataOwnerRequest
+    RegisterDataOwnerRequest, TransactionResponse
 } from "./types";
 
 @boundClass
@@ -57,11 +56,15 @@ export class BillingApiClient implements IBootstrap {
         return this.axiosInstance.get(`/wallet/balance/${address}`);
     }
 
-    public getFiles(page: number, pageSize: number): AxiosPromise<BillingFilesCollectionResponse> {
+    public getFiles(page: number, pageSize: number): AxiosPromise<PaginatedResponse<BillingFileResponse>> {
         return this.axiosInstance.get(`/files/paginate/${page}/${pageSize}`);
     }
 
     public getDataOwnersOfDataValidator(dataValidatorAddress: string): AxiosPromise<DataOwnersResponse> {
         return this.axiosInstance.get(`/account/owners/${dataValidatorAddress}`);
+    }
+
+    public getTransactions(address: string, page: number, pageSize: number): AxiosPromise<PaginatedResponse<TransactionResponse>> {
+        return this.axiosInstance.get(`/transaction/address/${address}/paginate/${page}/${pageSize}`);
     }
 }

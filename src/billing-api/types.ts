@@ -32,6 +32,11 @@ export interface BalanceResponse {
     balance: string
 }
 
+export interface PaginatedResponse<DataType> {
+    count: string | number,
+    data: DataType[]
+}
+
 export interface BillingFileResponse {
     id: string,
     name: string,
@@ -41,11 +46,6 @@ export interface BillingFileResponse {
     owner: string
 }
 
-export interface BillingFilesCollectionResponse {
-    count: number,
-    data: BillingFileResponse[]
-}
-
 export interface RegisterDataOwnerRequest {
     dataValidator: string,
     dataOwner: string
@@ -53,4 +53,20 @@ export interface RegisterDataOwnerRequest {
 
 export interface DataOwnersResponse {
     address: string[]
+}
+
+export enum TransactionType {
+    DATA_UPLOAD = "dataUpload",
+    DATA_SELL = "dataSell"
+}
+
+export interface TransactionResponse {
+    id: string,
+    hash: string,
+    txType: TransactionType,
+    from: string,
+    to: string,
+    serviceNode: string,
+    value: string,
+    status: boolean
 }
