@@ -5,10 +5,16 @@ import {BillingApiClient} from "../billing-api";
 import DB from "../common/DB";
 import IBootstrapping from "../common/interfaces/IBootstrap";
 import {DdsApiClient} from "../dds-api";
-import {AccountsController, FilesController, IAppController, PurchasesController} from "./controllers";
+import {
+    AccountsController,
+    FilesController,
+    IAppController,
+    PurchasesController,
+    TransactionsController
+} from "./controllers";
 import {exceptionHandler} from "./middlewares";
 import {AccountsRepository, DataOwnersOfDataValidatorRepository, FilesRepository} from "./repositories";
-import {AccountsService, FilesService, PurchasesService} from "./services";
+import {AccountsService, FilesService, PurchasesService, TransactionsService} from "./services";
 
 export class ExpressApp implements IBootstrapping {
     private readonly expressPort: number;
@@ -47,11 +53,13 @@ export class ExpressApp implements IBootstrapping {
             new AccountsRepository(dataStore),
             new DataOwnersOfDataValidatorRepository(dataStore)
         );
+        const transactionsService = new TransactionsService(billingApiClient);
 
         const controllers: IAppController[] = [
             new FilesController(Router(), filesService),
             new PurchasesController(Router(), purchasesService),
-            new AccountsController(Router(), accountsService)
+            new AccountsController(Router(), accountsService),
+            new TransactionsController(Router(), transactionsService)
         ];
 
         controllers.forEach(controller => {

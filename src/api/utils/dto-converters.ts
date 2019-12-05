@@ -1,4 +1,10 @@
-import {CreateLocalFileRecordDto, DdsFileUploadCheckResponse, LocalFileRecordDto, UploadFileDto} from "../dto";
+import {
+    CreateLocalFileRecordDto,
+    DdsFileDto,
+    DdsFileUploadCheckResponse,
+    LocalFileRecordDto,
+    UploadFileDto
+} from "../dto";
 import {EntityType, LocalFileRecord} from "../entity";
 
 export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFileRecord, data: string): UploadFileDto => {
@@ -65,4 +71,18 @@ export const localFileRecordToLocalFileRecordDto = (localFileRecord: LocalFileRe
     mimeType: localFileRecord.mimeType,
     metadata: localFileRecord.metadata,
     deletedLocally: localFileRecord.deletedLocally
+});
+
+export const localFileRecordToDdsFileDto = (localFileRecord: LocalFileRecord): DdsFileDto => ({
+    id: localFileRecord.ddsId!,
+    dataOwner: localFileRecord.dataOwnerAddress,
+    dataValidator: localFileRecord.dataValidatorAddress,
+    extension: localFileRecord.extension,
+    keepUntil: localFileRecord.keepUntil,
+    metadata: localFileRecord.metadata,
+    mimeType: localFileRecord.mimeType,
+    price: localFileRecord.price!,
+    serviceNode: localFileRecord.serviceNodeAddress,
+    size: localFileRecord.size,
+    name: localFileRecord.name
 });

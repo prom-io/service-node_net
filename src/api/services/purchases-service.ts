@@ -16,6 +16,7 @@ export class PurchasesService {
     public purchaseData(purchaseDataDto: PurchaseDataDto): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             try {
+                console.log("purchasing file");
                 const fileInfo = await this.getFileInfoById(purchaseDataDto.fileId);
                 await this.makeDataPurchase(purchaseDataDto, fileInfo.data.attributes.price);
                 resolve({
@@ -23,6 +24,7 @@ export class PurchasesService {
                     message: `File with ID ${purchaseDataDto.fileId} has been successfully purchased`
                 })
             } catch (error) {
+                console.log(error);
                 reject(error);
             }
         })
@@ -31,7 +33,18 @@ export class PurchasesService {
     private getFileInfoById(fileId: string): Promise<DdsApiResponse<FileInfo>> {
         return new Promise((resolve, reject) => {
             this.ddsApiClient.getFileInfo(fileId)
-                .then(({data}) => resolve(data))
+                .then(({data}) => resolve({
+                    ...data,
+                    data: {
+                        ...data.data,
+                        attributes: {
+                            ...data.data.attributes,
+                            price: data.data.attributes.price / 10000 // Gotta do this replacement because stub DDS service returns
+                                                                      // 100.5 ETH as storage price which is too huge.
+                                                                      // TODO: remove this replacement when DDS starts to make actual calculations
+                        }
+                    }
+                }))
                 .catch((error: AxiosError) => {
                     if (error.response) {
                         if (error.response.status === 404) {
@@ -49,9 +62,10 @@ export class PurchasesService {
     private makeDataPurchase(purchaseDataDto: PurchaseDataDto, dataPrice: number): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.billingApiClient.payForDataPurchase({
-                dataValidator: purchaseDataDto.dataValidatorAddress,
-                owner: purchaseDataDto.dataOwnerAddress,
-                sum: dataPrice
+                id: purchaseDataDto.fileId,
+                data_validator: purchaseDataDto.dataValidatorAddress,
+                owner: purchaseDataDto.dataMartAddress,
+                sum: "" + dataPrice
             }).then((response: any) => {
                 resolve(response);
             }).catch((error: AxiosError) => {

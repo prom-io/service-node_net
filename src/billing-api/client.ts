@@ -3,11 +3,13 @@ import Axios, {AxiosInstance, AxiosPromise} from "axios";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
-    BalanceResponse,
-    GenericBillingApiResponse,
+    BalanceResponse, BillingFileResponse,
+    DataOwnersResponse,
+    GenericBillingApiResponse, PaginatedResponse,
     PayForDataPurchaseRequest,
     PayForDataUploadRequest,
-    RegisterAccountRequest
+    RegisterAccountRequest,
+    RegisterDataOwnerRequest, TransactionResponse
 } from "./types";
 
 @boundClass
@@ -42,8 +44,8 @@ export class BillingApiClient implements IBootstrap {
         return this.axiosInstance.post("/account/register/data-mart", registerAccountRequest);
     }
 
-    public registerDataOwner(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
-        return this.axiosInstance.post("/account/register/data-owner", registerAccountRequest);
+    public registerDataOwner(registerDataOwnerRequest: RegisterDataOwnerRequest): AxiosPromise<void> {
+        return this.axiosInstance.post("/account/register/data-owner", registerDataOwnerRequest);
     }
 
     public registerServiceNode(registerAccountRequest: RegisterAccountRequest): AxiosPromise<void> {
@@ -52,5 +54,17 @@ export class BillingApiClient implements IBootstrap {
 
     public getBalanceOfAddress(address: string): AxiosPromise<BalanceResponse> {
         return this.axiosInstance.get(`/wallet/balance/${address}`);
+    }
+
+    public getFiles(page: number, pageSize: number): AxiosPromise<PaginatedResponse<BillingFileResponse>> {
+        return this.axiosInstance.get(`/files/paginate/${page}/${pageSize}`);
+    }
+
+    public getDataOwnersOfDataValidator(dataValidatorAddress: string): AxiosPromise<DataOwnersResponse> {
+        return this.axiosInstance.get(`/account/owners/${dataValidatorAddress}`);
+    }
+
+    public getTransactions(address: string, page: number, pageSize: number): AxiosPromise<PaginatedResponse<TransactionResponse>> {
+        return this.axiosInstance.get(`/transaction/address/${address}/paginate/${page}/${pageSize}`);
     }
 }
