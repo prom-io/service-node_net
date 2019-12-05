@@ -1,15 +1,15 @@
 import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
+import {Response} from "express";
 import fileSystem from "fs";
-import DataStore from "nedb";
 import uuid from "uuid/v4"
 import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
-    CreateLocalFileRecordDto,
+    CreateLocalFileRecordDto, DdsFileDto,
     DdsFileUploadCheckResponse,
     ExtendFileStorageDurationDto,
-    LocalFileRecordDto,
+    LocalFileRecordDto, PaginationDto,
     UploadChunkDto,
     UploadFileDto
 } from "../dto";
@@ -17,14 +17,14 @@ import {LocalFileRecord} from "../entity";
 import {
     BillingApiErrorException,
     DdsErrorException,
-    FileNotFoundException, LocalFileDeletionException, LocalFileHasAlreadyBeenDeletedException,
-    LocalFileNotFoundException
+    FileNotFoundException,
+    LocalFileHasAlreadyBeenDeletedException
 } from "../exceptions";
 import {FilesRepository} from "../repositories";
 import {
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
-    createUploadFileDtoFromLocalFileRecord,
+    createUploadFileDtoFromLocalFileRecord, localFileRecordToDdsFileDto,
     localFileRecordToLocalFileRecordDto
 } from "../utils";
 
@@ -37,6 +37,11 @@ export class FilesService {
         this.ddsApiClient = ddsApiClient;
         this.billingApiClient = billingApiClient;
         this.filesRepository = filesRepository;
+    }
+
+    public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
+        return this.filesRepository.findAllNotFailed(paginationDto)
+            .then(files => files.map(file => localFileRecordToDdsFileDto(file)));
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
@@ -167,6 +172,15 @@ export class FilesService {
                     }
                 })
         })
+    }
+
+    public getFile(fileId: string, httpResponse: Response): Promise<any> {
+        console.log(`Retrieving file with id ${fileId}`);
+        return this.ddsApiClient.getFile(fileId)
+            .then(({data}) => {
+                httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
+                data.pipe(httpResponse);
+            });
     }
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {

@@ -13,10 +13,11 @@ export class PurchasesController implements IAppController {
     constructor(router: Router, purchasesService: PurchasesService) {
         this.router = router;
         this.purchasesService = purchasesService;
+        this.initializeRoutes();
     }
 
     public initializeRoutes(): void {
-        this.router.post("/purchase", validationMiddleware(PurchaseDataDto), this.purchaseData)
+        this.router.post("/purchases", validationMiddleware(PurchaseDataDto), this.purchaseData)
     }
 
     public async purchaseData(request: Request, response: Response, next: NextFunction) {

@@ -100,7 +100,7 @@ export class DdsApiClient implements IBootstrap {
 
     public getFile(fileId: string): AxiosPromise<any> {
         return this.axiosInstance.get(`/files/${fileId}`, {
-            responseType: "blob"
+            responseType: "stream"
         });
     }
 }

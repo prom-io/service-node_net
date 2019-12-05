@@ -14,9 +14,10 @@ export interface PayForDataUploadRequest {
 }
 
 export interface PayForDataPurchaseRequest {
+    id: string,
     owner: string,
-    dataValidator: string,
-    sum: number
+    data_validator: string,
+    sum: string
 }
 
 export interface RegisterAccountRequest {
@@ -29,4 +30,43 @@ export interface GenericBillingApiResponse {
 
 export interface BalanceResponse {
     balance: string
+}
+
+export interface PaginatedResponse<DataType> {
+    count: string | number,
+    data: DataType[]
+}
+
+export interface BillingFileResponse {
+    id: string,
+    name: string,
+    size: number,
+    file_extension: string,
+    mime_type: string,
+    owner: string
+}
+
+export interface RegisterDataOwnerRequest {
+    dataValidator: string,
+    dataOwner: string
+}
+
+export interface DataOwnersResponse {
+    address: string[]
+}
+
+export enum TransactionType {
+    DATA_UPLOAD = "dataUpload",
+    DATA_SELL = "dataSell"
+}
+
+export interface TransactionResponse {
+    id: string,
+    hash: string,
+    txType: TransactionType,
+    from: string,
+    to: string,
+    serviceNode: string,
+    value: string,
+    status: boolean
 }
