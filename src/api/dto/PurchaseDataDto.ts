@@ -25,9 +25,20 @@ export class PurchaseDataDto {
     )
     public dataValidatorAddress: string;
 
-    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string) {
+    @IsNotEmpty({message: "Service node address must be present"})
+    @IsString({message: "Service node address must be string"})
+    @Matches(
+        new RegExp("^0x[a-fA-F0-9]{40}$"),
+        {
+            message: "Service node address must be valid Ethereum address"
+        }
+    )
+    public serviceNodeAddress: string;
+
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, serviceNodeAddress: string) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
+        this.serviceNodeAddress = serviceNodeAddress;
     }
 }

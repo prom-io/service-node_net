@@ -22,6 +22,7 @@ import {
 } from "../exceptions";
 import {FilesRepository} from "../repositories";
 import {
+    billingFileToDdsFile,
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
     createUploadFileDtoFromLocalFileRecord, localFileRecordToDdsFileDto,
@@ -40,8 +41,17 @@ export class FilesService {
     }
 
     public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
-        return this.filesRepository.findAllNotFailed(paginationDto)
-            .then(files => files.map(file => localFileRecordToDdsFileDto(file)));
+        return new Promise<DdsFileDto[]>((resolve, reject) => {
+            this.billingApiClient.getFiles(paginationDto.page, paginationDto.size)
+                .then(({data}) => resolve(data.data.map(file => billingFileToDdsFile(file))))
+                .catch((error: AxiosError) => {
+                    if (error.response) {
+                        reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
+                    } else {
+                        reject(new BillingApiErrorException("Billing API is unreachable"));
+                    }
+                })
+        })
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {

@@ -1,3 +1,4 @@
+import {BillingFileResponse} from "../../billing-api";
 import {
     CreateLocalFileRecordDto,
     DdsFileDto,
@@ -75,14 +76,22 @@ export const localFileRecordToLocalFileRecordDto = (localFileRecord: LocalFileRe
 
 export const localFileRecordToDdsFileDto = (localFileRecord: LocalFileRecord): DdsFileDto => ({
     id: localFileRecord.ddsId!,
-    dataOwner: localFileRecord.dataOwnerAddress,
     dataValidator: localFileRecord.dataValidatorAddress,
     extension: localFileRecord.extension,
-    keepUntil: localFileRecord.keepUntil,
     metadata: localFileRecord.metadata,
     mimeType: localFileRecord.mimeType,
     price: localFileRecord.price!,
-    serviceNode: localFileRecord.serviceNodeAddress,
     size: localFileRecord.size,
     name: localFileRecord.name
+});
+
+export const billingFileToDdsFile = (billingFile: BillingFileResponse): DdsFileDto => ({
+    id: billingFile.id,
+    size: Number(billingFile.size),
+    price: Number(billingFile.sum),
+    dataValidator: billingFile.owner,
+    mimeType: billingFile.mime_type,
+    metadata: {},
+    extension: billingFile.file_extension,
+    name: billingFile.name
 });

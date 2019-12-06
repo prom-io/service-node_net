@@ -65,10 +65,12 @@ export class PurchasesService {
                 id: purchaseDataDto.fileId,
                 data_validator: purchaseDataDto.dataValidatorAddress,
                 owner: purchaseDataDto.dataMartAddress,
-                sum: "" + dataPrice
+                sum: "" + dataPrice,
+                service_node: purchaseDataDto.serviceNodeAddress
             }).then((response: any) => {
                 resolve(response);
             }).catch((error: AxiosError) => {
+                console.log(error);
                 if (error.response) {
                     reject(new BillingApiErrorException(`Billing API responded with ${error.response.status}`));
                 } else {

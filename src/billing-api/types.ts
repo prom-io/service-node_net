@@ -17,7 +17,8 @@ export interface PayForDataPurchaseRequest {
     id: string,
     owner: string,
     data_validator: string,
-    sum: string
+    sum: string,
+    service_node: string
 }
 
 export interface RegisterAccountRequest {
@@ -40,10 +41,11 @@ export interface PaginatedResponse<DataType> {
 export interface BillingFileResponse {
     id: string,
     name: string,
-    size: number,
+    size: string,
     file_extension: string,
     mime_type: string,
-    owner: string
+    owner: string,
+    sum: string
 }
 
 export interface RegisterDataOwnerRequest {
