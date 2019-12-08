@@ -33,7 +33,8 @@ export interface LocalFileRecord extends IBaseEntity {
     failed: boolean,
     ddsId?: string,
     price?: number,
-    deletedLocally: boolean
+    deletedLocally: boolean,
+    createdAt: number
 }
 
 export interface DataOwnersOfDataValidator extends IBaseEntity {

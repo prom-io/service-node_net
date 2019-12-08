@@ -60,7 +60,8 @@ export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordD
         keepUntil: createLocalFileRecordDto.keepUntil,
         uploadedToDds: false,
         failed: false,
-        deletedLocally: false
+        deletedLocally: false,
+        createdAt: new Date().getTime()
     };
 };
 
@@ -71,7 +72,8 @@ export const localFileRecordToLocalFileRecordDto = (localFileRecord: LocalFileRe
     id: localFileRecord._id!,
     mimeType: localFileRecord.mimeType,
     metadata: localFileRecord.metadata,
-    deletedLocally: localFileRecord.deletedLocally
+    deletedLocally: localFileRecord.deletedLocally,
+    createdAt: localFileRecord.createdAt
 });
 
 export const localFileRecordToDdsFileDto = (localFileRecord: LocalFileRecord): DdsFileDto => ({

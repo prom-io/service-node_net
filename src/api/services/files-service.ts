@@ -6,10 +6,12 @@ import uuid from "uuid/v4"
 import {BillingApiClient} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
-    CreateLocalFileRecordDto, DdsFileDto,
+    CreateLocalFileRecordDto,
+    DdsFileDto,
     DdsFileUploadCheckResponse,
     ExtendFileStorageDurationDto,
-    LocalFileRecordDto, PaginationDto,
+    LocalFileRecordDto,
+    PaginationDto,
     UploadChunkDto,
     UploadFileDto
 } from "../dto";
@@ -25,7 +27,8 @@ import {
     billingFileToDdsFile,
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
-    createUploadFileDtoFromLocalFileRecord, localFileRecordToDdsFileDto,
+    createUploadFileDtoFromLocalFileRecord,
+    localFileRecordToDdsFileDto,
     localFileRecordToLocalFileRecordDto
 } from "../utils";
 
@@ -41,6 +44,9 @@ export class FilesService {
     }
 
     public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
+        return this.filesRepository.findAllNotFailed(paginationDto)
+            .then(files => files.map(file => localFileRecordToDdsFileDto(file)));
+        /*
         return new Promise<DdsFileDto[]>((resolve, reject) => {
             this.billingApiClient.getFiles(paginationDto.page, paginationDto.size)
                 .then(({data}) => resolve(data.data.map(file => billingFileToDdsFile(file))))
@@ -52,6 +58,7 @@ export class FilesService {
                     }
                 })
         })
+        */
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
