@@ -1,4 +1,4 @@
-import {IsDateString, IsInt, IsNotEmpty, IsString, Matches} from "class-validator";
+import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
 import {FileMetadata} from "./FileMetadata";
 
 export class CreateLocalFileRecordDto {
@@ -53,8 +53,12 @@ export class CreateLocalFileRecordDto {
     )
     public dataValidatorAddress: string;
 
+    @IsNotEmpty({message: "Price must be specified"})
+    @IsNumber({allowNaN: false, allowInfinity: false}, {message: "Price must be a number"})
+    @IsPositive({message: "Price must be positive"})
+    public price: number;
 
-    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string) {
+    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.additional = additional;
@@ -64,5 +68,6 @@ export class CreateLocalFileRecordDto {
         this.size = size;
         this.serviceNodeAddress = serviceNodeAddress;
         this.dataValidatorAddress = dataValidatorAddress;
+        this.price = price;
     }
 }

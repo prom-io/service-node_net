@@ -9,8 +9,9 @@ export interface PayForDataUploadRequest {
     mime_type: string,
     service_node: string,
     data_owner: string,
-    data_price: string,
-    sum: string
+    buy_sum: string,
+    sum: string,
+    meta_data: string
 }
 
 export interface PayForDataPurchaseRequest {
@@ -43,7 +44,10 @@ export interface BillingFileResponse {
     size: number,
     file_extension: string,
     mime_type: string,
-    owner: string
+    owner: string,
+    sum: string,
+    buy_sum: string,
+    meta_data: string
 }
 
 export interface RegisterDataOwnerRequest {

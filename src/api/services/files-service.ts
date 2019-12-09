@@ -229,13 +229,14 @@ export class FilesService {
                 sum: "" + price,
                 data_owner: uploadFileDto.dataOwnerAddress,
                 owner: uploadFileDto.dataValidatorAddress,
-                data_price: "" + price,
+                buy_sum: "" + price,
                 extension: uploadFileDto.extension,
                 id: fileId,
                 mime_type: uploadFileDto.mimeType,
                 name: uploadFileDto.name,
                 service_node: uploadFileDto.serviceNodeAddress,
-                size: uploadFileDto.size
+                size: uploadFileDto.size,
+                meta_data: JSON.stringify(uploadFileDto.additional)
             }).then(() => {
                 resolve();
             }).catch((billingError: AxiosError) => {

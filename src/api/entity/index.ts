@@ -32,7 +32,7 @@ export interface LocalFileRecord extends IBaseEntity {
     uploadedToDds: boolean,
     failed: boolean,
     ddsId?: string,
-    price?: number,
+    price: number,
     deletedLocally: boolean
 }
 

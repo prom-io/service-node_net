@@ -6,6 +6,7 @@ import {
     UploadFileDto
 } from "../dto";
 import {EntityType, LocalFileRecord} from "../entity";
+import {BillingFileResponse} from "../../billing-api";
 
 export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFileRecord, data: string): UploadFileDto => {
     return UploadFileDto.fromObject({
@@ -18,7 +19,8 @@ export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFil
         keepUntil: localFileRecord.keepUntil,
         data,
         name: localFileRecord.name,
-        dataOwnerAddress: localFileRecord.dataOwnerAddress
+        dataOwnerAddress: localFileRecord.dataOwnerAddress,
+        price: localFileRecord.price
     });
 };
 
@@ -59,7 +61,8 @@ export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordD
         keepUntil: createLocalFileRecordDto.keepUntil,
         uploadedToDds: false,
         failed: false,
-        deletedLocally: false
+        deletedLocally: false,
+        price: createLocalFileRecordDto.price
     };
 };
 
