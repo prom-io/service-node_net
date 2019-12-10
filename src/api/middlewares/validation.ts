@@ -8,6 +8,7 @@ export const validationMiddleware = <T>(type: any): RequestHandler => {
         validate(plainToClass(type, request.body))
             .then((errors: ValidationError[]) => {
                 if (errors.length > 0) {
+                    console.log(errors);
                     const message = errors.map(error => Object.values(error.constraints)).join(", ");
                     next(new BadRequestException(message));
                 } else {

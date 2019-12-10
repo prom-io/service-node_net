@@ -66,6 +66,7 @@ export enum TransactionType {
 
 export interface TransactionResponse {
     id: string,
+    uuid: string,
     hash: string,
     txType: TransactionType,
     from: string,

@@ -1,5 +1,6 @@
 import Axios, {AxiosError, AxiosInstance, AxiosPromise} from "axios";
 import dateFormat from "dateformat";
+import uuid4 from "uuid/v4";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
@@ -10,7 +11,8 @@ import {
     FileInfo,
     NotifyPaymentStatusRequest,
     NotifyPaymentStatusResponse,
-    PeriodPaymentResponse, StorageResponse,
+    PeriodPaymentResponse,
+    StorageResponse,
     UploadFileRequest,
     UploadFileResponse
 } from "./types";
@@ -51,6 +53,7 @@ export class DdsApiClient implements IBootstrap {
     }
 
     public uploadFile(request: UploadFileRequest): AxiosPromise<DdsApiResponse<UploadFileResponse>> {
+
         return new Promise((resolve, reject) => {
             this.axiosInstance.post("/files", wrapDdsApiRequest(request, DdsApiType.FILE))
                 .catch((error: AxiosError) => {

@@ -33,8 +33,8 @@ export class CreateLocalFileRecordDto {
     @IsInt({message: "File size must be integer number which represents size in bytes"})
     public size: number;
 
-    @IsNotEmpty({message: "Data owner address must be specified"})
-    @IsString({message: "Data owner address must be string"})
+    @IsNotEmpty({message: "Service node address must be specified"})
+    @IsString({message: "Service node address must be string"})
     @Matches(
         new RegExp("^0x[a-fA-F0-9]{40}$"),
         {

@@ -80,7 +80,7 @@ export class FilesController implements IAppController {
         const fileId = request.params.fileId;
 
         this.filesService.getFileInfo(fileId)
-            .then(result => response.json({id: result.data.id, ...unwrapDdsApiResponse(result)}))
+            .then(result => response.json(result))
             .catch(error => next(error));
     }
 
