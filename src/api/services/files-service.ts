@@ -74,7 +74,7 @@ export class FilesService {
                 if (localFile.deletedLocally) {
                     throw new LocalFileHasAlreadyBeenDeletedException(`Local file with id ${localFileId} has already been deleted`);
                 } else {
-                    /*if (fileSystem.existsSync(localFile.localPath)) {
+                    if (fileSystem.existsSync(localFile.localPath)) {
                         fileSystem.unlink(localFile.localPath, error => {
                             if (error) {
                                 console.log(error);
@@ -85,7 +85,7 @@ export class FilesService {
                                 return;
                             });
                         })
-                    }*/
+                    }
                 }
             });
     }
