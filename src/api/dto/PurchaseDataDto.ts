@@ -25,9 +25,14 @@ export class PurchaseDataDto {
     )
     public dataValidatorAddress: string;
 
-    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string) {
+    @IsNotEmpty({message: "Data owner address must be present"})
+    @IsString({message: "Data owner address must be present"})
+    public dataOwnerAddress: string;
+
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
+        this.dataOwnerAddress = dataOwnerAddress;
     }
 }

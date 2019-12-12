@@ -5,8 +5,11 @@ export interface TransactionDto {
     id: string,
     hash: string,
     value: number,
-    from: string,
-    to: string,
+    dataValidator: string,
+    dataMart: string,
+    dataOwner: string,
+    blockNumber: number,
+    queueNumber: number,
     status: boolean,
     serviceNode: string,
     type: TransactionType

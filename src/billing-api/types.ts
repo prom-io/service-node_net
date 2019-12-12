@@ -47,7 +47,8 @@ export interface BillingFileResponse {
     owner: string,
     sum: string,
     buy_sum: string,
-    meta_data: string
+    meta_data: string,
+    data_owner: string
 }
 
 export interface RegisterDataOwnerRequest {
@@ -66,12 +67,14 @@ export enum TransactionType {
 
 export interface TransactionResponse {
     id: string,
-    uuid: string,
     hash: string,
     txType: TransactionType,
-    from: string,
-    to: string,
+    dataOwner: string,
+    dataMart: string,
+    dataValidator: string,
+    blockNumber: number,
     serviceNode: string,
+    queueNumber: number,
     value: string,
     status: boolean
 }

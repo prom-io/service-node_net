@@ -31,6 +31,7 @@ import {
 } from "../exceptions";
 import {FilesRepository} from "../repositories";
 import {
+    billingFileToDdsFileResponse,
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
     createUploadFileDtoFromLocalFileRecord,
@@ -50,8 +51,8 @@ export class FilesService {
     }
 
     public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
-        return this.filesRepository.findAllNotFailed(paginationDto)
-            .then(files => files.map(file => localFileRecordToDdsFileDto(file)));
+        return this.billingApiClient.getFiles(paginationDto.page, paginationDto.size)
+            .then(({data}) => data.data.map(file => billingFileToDdsFileResponse(file)));
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
@@ -122,11 +123,11 @@ export class FilesService {
                     storagePrice,
                     ddsResponse.data.id
                 );
-                /*await this.ddsApiClient.notifyPaymentStatus({
+                await this.ddsApiClient.notifyPaymentStatus({
                     status: "success",
                     file_id: ddsResponse.data.id,
                     amount: storagePrice
-                });*/
+                });
                 
                 if (localFileId) {
                     this.filesRepository.findById(localFileId).then(localFile => {
@@ -192,77 +193,29 @@ export class FilesService {
     }
 
     public getFile(fileId: string, httpResponse: Response): Promise<any> {
-        console.log(`Retrieving file with id ${fileId}`);
-        return this.filesRepository.findByDdsId(fileId).then(fileRecord => {
-            httpResponse.download(fileRecord.localPath);
-        })
-
-        /*
         return this.ddsApiClient.getFile(fileId)
             .then(({data}) => {
                 httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
                 data.pipe(httpResponse);
             });
-         */
     }
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
         const additional = uploadFileDto.additional;
 
-        /*additional.extension = uploadFileDto.extension;
-        additional.size = uploadFileDto.size.toString(10);
-        additional.mimeType = uploadFileDto.mimeType;*/
+        const hashTags = JSON.stringify(uploadFileDto.additional.hashTags);
 
         return new Promise((resolve, reject) => {
-            const id = uuid();
-            const response: DdsApiResponse<UploadFileResponse> = {
-                data: {
-                    attributes: {
-                        name: uploadFileDto.name,
-                        additional: uploadFileDto.additional,
-                        duration: differenceInSeconds(
-                            parse(uploadFileDto.keepUntil,
-                                "yyyy-MM-dd'T'hh:mm:ss'Z'",
-                                addMonths(new Date(), 1)
-                            ), new Date()),
-                        price: 0.001
-                    },
-                    id,
-                    links: {
-                        self: "1111"
-                    },
-                    type: DdsApiType.FILE
-                }
-            };
-
-            setTimeout(() => resolve(response), 3000);
-
-            /*
             this.ddsApiClient.uploadFile({
                 data: uploadFileDto.data,
-                duration: differenceInSeconds(
-                    parse(uploadFileDto.keepUntil,
-                        "yyyy-MM-dd'T'hh:mm:ss'Z'",
-                        addMonths(new Date(), 1)
-                    ), new Date()),
+                duration: differenceInSeconds(new Date(uploadFileDto.keepUntil), new Date()),
                 name: uploadFileDto.name,
                 additional: {
                     ...additional,
                     hashTags
                 }
             }).then(({data}) => {
-                resolve({
-                    ...data,
-                    data: {
-                        ...data.data,
-                        attributes: {
-                            ...data.data.attributes,
-                            price: data.data.attributes.price / 10000 // Gotta do this replacement because stub DDS service returns
-                                                                      // 100.5 ETH as storage price which is too huge.
-                                                                      // TODO: remove this replacement when DDS starts to make actual calculations
-                        }
-                    }
-                });
+                resolve(data);
             }).catch((ddsError: AxiosError) => {
                 console.log(ddsError);
                 if (ddsError.response) {
@@ -271,7 +224,7 @@ export class FilesService {
                 } else {
                     reject(new DdsErrorException(`DDS is unreachable`))
                 }
-            })*/
+            })
         })
     }
 

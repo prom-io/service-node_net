@@ -16,12 +16,15 @@ export class TransactionsService {
                 .then(({data}) => resolve(data.data.map(transaction => ({
                     id: transaction.id,
                     value: Number(transaction.value),
-                    from: transaction.from,
-                    to: transaction.to,
+                    dataOwner: transaction.dataOwner,
+                    dataMart: transaction.dataMart,
+                    dataValidator: transaction.dataValidator,
                     type: transaction.txType,
                     status: transaction.status,
                     hash: transaction.hash,
-                    serviceNode: transaction.serviceNode
+                    serviceNode: transaction.serviceNode,
+                    blockNumber: transaction.blockNumber,
+                    queueNumber: transaction.queueNumber
                 }))))
                 .catch((error: AxiosError) => {
                     console.log(error);
