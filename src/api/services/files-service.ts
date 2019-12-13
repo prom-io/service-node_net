@@ -4,14 +4,7 @@ import {Response} from "express";
 import fileSystem from "fs";
 import uuid from "uuid/v4"
 import {BillingApiClient} from "../../billing-api";
-import {
-    DdsApiClient,
-    DdsApiResponse,
-    DdsApiType,
-    ExtendFileStorageResponse,
-    FileInfo,
-    UploadFileResponse
-} from "../../dds-api";
+import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
     CreateLocalFileRecordDto,
     DdsFileDto,
@@ -50,9 +43,9 @@ export class FilesService {
         this.filesRepository = filesRepository;
     }
 
-    public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
-        return this.billingApiClient.getFiles(paginationDto.page, paginationDto.size)
-            .then(({data}) => data.data.map(file => billingFileToDdsFileResponse(file)));
+    public async findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
+        const {data} = await this.billingApiClient.getFiles(paginationDto.page, paginationDto.size);
+        return data.data.filter(file => file.id !== "a9e5ec0f-517a-4292-b934-55ce578a473a").map(file => billingFileToDdsFileResponse(file))
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
@@ -90,26 +83,23 @@ export class FilesService {
             });
     }
 
-    public writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{success: boolean}> {
-        return this.filesRepository.findById(localFileId).then(localFile => {
-            fileSystem.appendFileSync(localFile.localPath, uploadChunkDto.chunkData);
-            return {success: true};
-        });
+    public async writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{ success: boolean }> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        fileSystem.appendFileSync(localFile.localPath, uploadChunkDto.chunkData);
+        return {success: true};
     }
 
-    public uploadLocalFileToDds(localFileId: string): Promise<{success: boolean}> {
-        return this.filesRepository.findById(localFileId)
-            .then(localFile => {
-                const data = fileSystem.readFileSync(localFile.localPath).toString();
-                const uploadFileDto = createUploadFileDtoFromLocalFileRecord(localFile, data);
-                this.uploadData(uploadFileDto, localFileId);
-                return {success: true};
-            });
+    public async uploadLocalFileToDds(localFileId: string): Promise<{ success: boolean }> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        const data = fileSystem.readFileSync(localFile.localPath).toString();
+        const uploadFileDto = createUploadFileDtoFromLocalFileRecord(localFile, data);
+        this.uploadData(uploadFileDto, localFileId);
+        return {success: true};
     }
 
-    public checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
-        return this.filesRepository.findById(localFileId)
-            .then(localFile => createDdsFileUploadCheckResponseFromLocalFileRecord(localFile));
+    public async checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        return createDdsFileUploadCheckResponseFromLocalFileRecord(localFile);
     }
 
     // tslint:disable-next-line:no-unnecessary-initializer
@@ -123,6 +113,7 @@ export class FilesService {
                     storagePrice,
                     ddsResponse.data.id
                 );
+
                 await this.ddsApiClient.notifyPaymentStatus({
                     status: "success",
                     file_id: ddsResponse.data.id,
@@ -133,6 +124,7 @@ export class FilesService {
                     this.filesRepository.findById(localFileId).then(localFile => {
                         localFile.failed = false;
                         localFile.price = uploadFileDto.price;
+                        localFile.storagePrice = storagePrice;
                         localFile.ddsId = ddsResponse.data.id;
                         localFile.uploadedToDds = true;
 
@@ -141,6 +133,7 @@ export class FilesService {
                 }
             } catch (error) {
                 console.log("Error occurred when uploading file");
+                console.log(error);
                 if (error.response) {
                     console.log(error.response);
                 }
@@ -192,12 +185,10 @@ export class FilesService {
         })*/
     }
 
-    public getFile(fileId: string, httpResponse: Response): Promise<any> {
-        return this.ddsApiClient.getFile(fileId)
-            .then(({data}) => {
-                httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
-                data.pipe(httpResponse);
-            });
+    public async getFile(fileId: string, httpResponse: Response): Promise<any> {
+        const {data} = await this.ddsApiClient.getFile(fileId);
+        httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
+        data.pipe(httpResponse);
     }
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
@@ -263,7 +254,6 @@ export class FilesService {
                         "yyyy-MM-dd'T'hh:mm:ss'Z'",
                         addMonths(new Date(), 1)
                     ), new Date()),
-                additional: extendFileStorageDurationDto.additional
             })
                 .then(({data}) => resolve(data))
                 .catch((error: AxiosError) => {

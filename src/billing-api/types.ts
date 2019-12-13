@@ -76,5 +76,6 @@ export interface TransactionResponse {
     serviceNode: string,
     queueNumber: number,
     value: string,
-    status: boolean
+    status: boolean,
+    created_at: string
 }

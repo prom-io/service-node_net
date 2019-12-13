@@ -57,7 +57,7 @@ export class BillingApiClient implements IBootstrap {
     }
 
     public getFiles(page: number, pageSize: number): AxiosPromise<PaginatedResponse<BillingFileResponse>> {
-        return this.axiosInstance.get(`/files/paginate/${page}/${pageSize}`);
+        return this.axiosInstance.get(`/file/paginate/${page}/${pageSize}`);
     }
 
     public getDataOwnersOfDataValidator(dataValidatorAddress: string): AxiosPromise<DataOwnersResponse> {

@@ -30,7 +30,8 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
             ddsFileId: localFileRecord.ddsId,
             price: localFileRecord.price,
             failed: false,
-            fullyUploaded: true
+            fullyUploaded: true,
+            storagePrice: localFileRecord.storagePrice
         }
     } else if (localFileRecord.failed) {
         return {
