@@ -3,7 +3,7 @@ import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import fileSystem from "fs";
 import uuid from "uuid/v4"
-import {BillingApiClient} from "../../billing-api";
+import {BillingApiClient, PayForFileStorageExtensionRequest} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
     CreateLocalFileRecordDto,
@@ -149,11 +149,18 @@ export class FilesService {
         })
     }
 
-    public extendStorageDuration(fileId: string, extendFileStorageDurationDto: ExtendFileStorageDurationDto): Promise<DdsApiResponse<ExtendFileStorageResponse>> {
+    public extendStorageDuration(fileId: string, extendFileStorageDurationDto: ExtendFileStorageDurationDto): Promise<{success: boolean}> {
         return new Promise(async (resolve, reject) => {
             try {
+                const fileInfo = await this.getFileInfo(fileId);
                 const extendStorageDurationResponse = await this.extendFileStorageDuration(fileId, extendFileStorageDurationDto);
-                resolve(extendStorageDurationResponse);
+                const payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest = {
+                    dataValidator: fileInfo.dataValidator,
+                    serviceNode: fileInfo.serviceNode,
+                    sum: extendStorageDurationResponse.data.attributes.price
+                };
+                await this.billingApiClient.payForStorageDurationExtension(payForFileStorageExtensionRequest);
+                return {success: true};
             } catch (error) {
                 reject(error);
             }

@@ -79,3 +79,9 @@ export interface TransactionResponse {
     status: boolean,
     created_at: string
 }
+
+export interface PayForFileStorageExtensionRequest {
+    serviceNode: string,
+    dataValidator: string,
+    sum: number
+}
