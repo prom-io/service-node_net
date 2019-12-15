@@ -60,7 +60,7 @@ export class AccountsController implements IAppController {
     public async registerDataOwner(request: Request, response: Response, next: NextFunction) {
         const createDataOwnerDto: CreateDataOwnerDto = request.body;
 
-        this.accountsService.registerDataValidator(createDataOwnerDto)
+        this.accountsService.registerDataOwner(createDataOwnerDto)
             .then(result => response.json(result))
             .catch(error => next(error));
     }

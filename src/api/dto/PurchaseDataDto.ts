@@ -1,3 +1,4 @@
+
 import {IsNotEmpty, IsString, Matches} from "class-validator";
 
 export class PurchaseDataDto {
@@ -25,6 +26,10 @@ export class PurchaseDataDto {
     )
     public dataValidatorAddress: string;
 
+    @IsNotEmpty({message: "Data owner address must be present"})
+    @IsString({message: "Data owner address must be present"})
+    public dataOwnerAddress: string;
+
     @IsNotEmpty({message: "Service node address must be present"})
     @IsString({message: "Service node address must be string"})
     @Matches(
@@ -35,10 +40,12 @@ export class PurchaseDataDto {
     )
     public serviceNodeAddress: string;
 
-    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, serviceNodeAddress: string) {
+
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, serviceNodeAddress: string) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
+        this.dataOwnerAddress = dataOwnerAddress;
         this.serviceNodeAddress = serviceNodeAddress;
     }
 }

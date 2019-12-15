@@ -7,7 +7,7 @@ import {
     DataOwnersResponse,
     GenericBillingApiResponse, PaginatedResponse,
     PayForDataPurchaseRequest,
-    PayForDataUploadRequest,
+    PayForDataUploadRequest, PayForFileStorageExtensionRequest,
     RegisterAccountRequest,
     RegisterDataOwnerRequest, TransactionResponse
 } from "./types";
@@ -66,5 +66,9 @@ export class BillingApiClient implements IBootstrap {
 
     public getTransactions(address: string, page: number, pageSize: number): AxiosPromise<PaginatedResponse<TransactionResponse>> {
         return this.axiosInstance.get(`/transaction/address/${address}/paginate/${page}/${pageSize}`);
+    }
+
+    public payForStorageDurationExtension(payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest): AxiosPromise<void> {
+        return this.axiosInstance.post("/wallet/extend/file/store", payForFileStorageExtensionRequest);
     }
 }

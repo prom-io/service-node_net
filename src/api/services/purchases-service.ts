@@ -33,18 +33,7 @@ export class PurchasesService {
     private getFileInfoById(fileId: string): Promise<DdsApiResponse<FileInfo>> {
         return new Promise((resolve, reject) => {
             this.ddsApiClient.getFileInfo(fileId)
-                .then(({data}) => resolve({
-                    ...data,
-                    data: {
-                        ...data.data,
-                        attributes: {
-                            ...data.data.attributes,
-                            price: data.data.attributes.price / 10000 // Gotta do this replacement because stub DDS service returns
-                                                                      // 100.5 ETH as storage price which is too huge.
-                                                                      // TODO: remove this replacement when DDS starts to make actual calculations
-                        }
-                    }
-                }))
+                .then(({data}) => resolve(data))
                 .catch((error: AxiosError) => {
                     if (error.response) {
                         if (error.response.status === 404) {

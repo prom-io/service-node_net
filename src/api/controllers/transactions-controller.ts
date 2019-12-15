@@ -21,16 +21,27 @@ export class TransactionsController implements IAppController {
 
     public initializeRoutes(): void {
         this.router.get("/transactions/:address", this.getTransactionsOfAddress);
+        this.router.get("/transactions/:address/count", this.countTransactionsOfAddress);
     }
 
     public async getTransactionsOfAddress(request: Request, response: Response, next: NextFunction) {
         const {address} = request.params;
         const {page, size} = request.query;
 
+        console.log(page);
+
         const validPage = getValidPage(page);
         const validPageSize = getValidPageSize(size);
 
         this.transactionsService.getTransactionsOfAddress(address, {page: validPage, size: validPageSize})
+            .then(result => response.json(result))
+            .catch(error => next(error));
+    }
+
+    public async countTransactionsOfAddress(request: Request, response: Response, next: NextFunction) {
+        const {address} = request.params;
+
+        this.transactionsService.countTransactionsByAddress(address)
             .then(result => response.json(result))
             .catch(error => next(error));
     }

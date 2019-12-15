@@ -1,3 +1,4 @@
+
 import {BillingFileResponse} from "../../billing-api";
 import {
     CreateLocalFileRecordDto,
@@ -19,7 +20,8 @@ export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFil
         keepUntil: localFileRecord.keepUntil,
         data,
         name: localFileRecord.name,
-        dataOwnerAddress: localFileRecord.dataOwnerAddress
+        dataOwnerAddress: localFileRecord.dataOwnerAddress,
+        price: localFileRecord.price
     });
 };
 
@@ -29,7 +31,8 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
             ddsFileId: localFileRecord.ddsId,
             price: localFileRecord.price,
             failed: false,
-            fullyUploaded: true
+            fullyUploaded: true,
+            storagePrice: localFileRecord.storagePrice
         }
     } else if (localFileRecord.failed) {
         return {
@@ -60,7 +63,8 @@ export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordD
         keepUntil: createLocalFileRecordDto.keepUntil,
         uploadedToDds: false,
         failed: false,
-        deletedLocally: false
+        deletedLocally: false,
+        price: createLocalFileRecordDto.price
     };
 };
 
@@ -76,22 +80,28 @@ export const localFileRecordToLocalFileRecordDto = (localFileRecord: LocalFileRe
 
 export const localFileRecordToDdsFileDto = (localFileRecord: LocalFileRecord): DdsFileDto => ({
     id: localFileRecord.ddsId!,
+    dataOwner: localFileRecord.dataOwnerAddress,
     dataValidator: localFileRecord.dataValidatorAddress,
     extension: localFileRecord.extension,
+    keepUntil: localFileRecord.keepUntil,
     metadata: localFileRecord.metadata,
     mimeType: localFileRecord.mimeType,
     price: localFileRecord.price!,
+    serviceNode: localFileRecord.serviceNodeAddress,
     size: localFileRecord.size,
     name: localFileRecord.name
 });
 
-export const billingFileToDdsFile = (billingFile: BillingFileResponse): DdsFileDto => ({
+export const billingFileToDdsFileResponse = (billingFile: BillingFileResponse): DdsFileDto => ({
     id: billingFile.id,
-    size: Number(billingFile.size),
-    price: Number(billingFile.sum),
+    dataOwner: billingFile.data_owner,
     dataValidator: billingFile.owner,
-    mimeType: billingFile.mime_type,
-    metadata: {},
     extension: billingFile.file_extension,
-    name: billingFile.name
+    metadata: JSON.parse(billingFile.meta_data),
+    price: Number(billingFile.buy_sum),
+    keepUntil: "",
+    mimeType: billingFile.mime_type,
+    name: billingFile.name,
+    serviceNode: "",
+    size: billingFile.size
 });

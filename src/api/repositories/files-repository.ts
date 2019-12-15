@@ -34,6 +34,14 @@ export class FilesRepository {
         })
     }
 
+    public findByDdsId(ddsId: string): Promise<LocalFileRecord> {
+        return new Promise<LocalFileRecord>(resolve => {
+            this.dataStore.findOne({ddsId, _type: EntityType.LOCAL_FILE_RECORD}, (_, document) => {
+                resolve(document);
+            })
+        })
+    }
+
     public findAllNotFailed(paginationRequest: PaginationDto): Promise<LocalFileRecord[]> {
         const limit = paginationRequest.size;
         const offset = (paginationRequest.page - 1) * limit + 1;

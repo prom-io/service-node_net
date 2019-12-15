@@ -52,6 +52,7 @@ export class AccountsService {
                     this.accountsRepository.save(account).then(() => resolve());
                 })
                 .catch((error: AxiosError) => {
+                    console.log(error);
                     if (error.response) {
                         if (error.response.status === 400) {
                             reject(new AddressIsAlreadyRegisteredException(`Address ${registerAccountDto.address} has already been registered`))
@@ -65,7 +66,7 @@ export class AccountsService {
         })
     }
 
-    public registerDataValidator(createDataOwnerDto: CreateDataOwnerDto): Promise<DataOwnersOfDataValidatorDto> {
+    public registerDataOwner(createDataOwnerDto: CreateDataOwnerDto): Promise<DataOwnersOfDataValidatorDto> {
         return new Promise<DataOwnersOfDataValidatorDto>((resolve, reject) => {
             this.billingApiClient.registerDataOwner({
                 dataOwner: createDataOwnerDto.address,
@@ -90,6 +91,7 @@ export class AccountsService {
                         })
                 })
                 .catch((error: AxiosError) => {
+                    console.log(error);
                     if (error.response) {
                         if (error.response.status === 400) {
                             reject(new AddressIsAlreadyRegisteredException(`Address ${createDataOwnerDto.address} has already been registered`))
@@ -132,6 +134,7 @@ export class AccountsService {
                     balance: Number(data.balance)
                 }))
                 .catch((error: AxiosError) => {
+                    console.log(error);
                     if (error.response) {
                         reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
                     } else {

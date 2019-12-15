@@ -14,3 +14,4 @@ export * from "./DataOwnersOfDataValidatorDto";
 export * from "./PaginationDto";
 export * from "./DdsFileDto";
 export * from "./TransactionDto";
+export * from "./TransactionsCountDto";

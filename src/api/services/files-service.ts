@@ -2,14 +2,17 @@ import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import fileSystem from "fs";
+import path from "path";
 import uuid from "uuid/v4"
-import {BillingApiClient} from "../../billing-api";
+import {BillingApiClient, PayForFileStorageExtensionRequest} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
-    CreateLocalFileRecordDto, DdsFileDto,
+    CreateLocalFileRecordDto,
+    DdsFileDto,
     DdsFileUploadCheckResponse,
     ExtendFileStorageDurationDto,
-    LocalFileRecordDto, PaginationDto,
+    LocalFileRecordDto,
+    PaginationDto,
     UploadChunkDto,
     UploadFileDto
 } from "../dto";
@@ -22,10 +25,11 @@ import {
 } from "../exceptions";
 import {FilesRepository} from "../repositories";
 import {
-    billingFileToDdsFile,
+    billingFileToDdsFileResponse,
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
-    createUploadFileDtoFromLocalFileRecord, localFileRecordToDdsFileDto,
+    createUploadFileDtoFromLocalFileRecord,
+    localFileRecordToDdsFileDto,
     localFileRecordToLocalFileRecordDto
 } from "../utils";
 
@@ -40,18 +44,9 @@ export class FilesService {
         this.filesRepository = filesRepository;
     }
 
-    public findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
-        return new Promise<DdsFileDto[]>((resolve, reject) => {
-            this.billingApiClient.getFiles(paginationDto.page, paginationDto.size)
-                .then(({data}) => resolve(data.data.map(file => billingFileToDdsFile(file))))
-                .catch((error: AxiosError) => {
-                    if (error.response) {
-                        reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
-                    } else {
-                        reject(new BillingApiErrorException("Billing API is unreachable"));
-                    }
-                })
-        })
+    public async findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
+        const {data} = await this.billingApiClient.getFiles(paginationDto.page, paginationDto.size);
+        return data.data.filter(file => file.id !== "a9e5ec0f-517a-4292-b934-55ce578a473a").map(file => billingFileToDdsFileResponse(file))
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
@@ -89,26 +84,23 @@ export class FilesService {
             });
     }
 
-    public writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{success: boolean}> {
-        return this.filesRepository.findById(localFileId).then(localFile => {
-            fileSystem.appendFileSync(localFile.localPath, uploadChunkDto.chunkData);
-            return {success: true};
-        });
+    public async writeFileChunk(localFileId: string, uploadChunkDto: UploadChunkDto): Promise<{ success: boolean }> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        fileSystem.appendFileSync(localFile.localPath, uploadChunkDto.chunkData);
+        return {success: true};
     }
 
-    public uploadLocalFileToDds(localFileId: string): Promise<{success: boolean}> {
-        return this.filesRepository.findById(localFileId)
-            .then(localFile => {
-                const data = fileSystem.readFileSync(localFile.localPath).toString();
-                const uploadFileDto = createUploadFileDtoFromLocalFileRecord(localFile, data);
-                this.uploadData(uploadFileDto, localFileId);
-                return {success: true};
-            });
+    public async uploadLocalFileToDds(localFileId: string): Promise<{ success: boolean }> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        const data = fileSystem.readFileSync(localFile.localPath).toString();
+        const uploadFileDto = createUploadFileDtoFromLocalFileRecord(localFile, data);
+        this.uploadData(uploadFileDto, localFileId);
+        return {success: true};
     }
 
-    public checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
-        return this.filesRepository.findById(localFileId)
-            .then(localFile => createDdsFileUploadCheckResponseFromLocalFileRecord(localFile));
+    public async checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
+        const localFile = await this.filesRepository.findById(localFileId);
+        return createDdsFileUploadCheckResponseFromLocalFileRecord(localFile);
     }
 
     // tslint:disable-next-line:no-unnecessary-initializer
@@ -116,22 +108,25 @@ export class FilesService {
         return new Promise(async (resolve, reject) => {
             try {
                 const ddsResponse = await this.uploadFileToDds(uploadFileDto);
-                const price = ddsResponse.data.attributes.price;
+                const storagePrice = ddsResponse.data.attributes.price;
                 await this.payForDataUpload(
                     uploadFileDto,
-                    price,
+                    storagePrice,
                     ddsResponse.data.id
                 );
+
+                /*
                 await this.ddsApiClient.notifyPaymentStatus({
                     status: "success",
                     file_id: ddsResponse.data.id,
-                    amount: price
-                });
-                
+                    amount: storagePrice
+                });*/
+
                 if (localFileId) {
                     this.filesRepository.findById(localFileId).then(localFile => {
                         localFile.failed = false;
-                        localFile.price = ddsResponse.data.attributes.price;
+                        localFile.price = uploadFileDto.price;
+                        localFile.storagePrice = storagePrice;
                         localFile.ddsId = ddsResponse.data.id;
                         localFile.uploadedToDds = true;
 
@@ -140,6 +135,7 @@ export class FilesService {
                 }
             } catch (error) {
                 console.log("Error occurred when uploading file");
+                console.log(error);
                 if (error.response) {
                     console.log(error.response);
                 }
@@ -155,19 +151,36 @@ export class FilesService {
         })
     }
 
-    public extendStorageDuration(fileId: string, extendFileStorageDurationDto: ExtendFileStorageDurationDto): Promise<DdsApiResponse<ExtendFileStorageResponse>> {
+    public extendStorageDuration(fileId: string, extendFileStorageDurationDto: ExtendFileStorageDurationDto): Promise<{success: boolean}> {
         return new Promise(async (resolve, reject) => {
             try {
+                const fileInfo = await this.getFileInfo(fileId);
+                console.log(extendFileStorageDurationDto);
                 const extendStorageDurationResponse = await this.extendFileStorageDuration(fileId, extendFileStorageDurationDto);
-                resolve(extendStorageDurationResponse);
+                const payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest = {
+                    dataValidator: fileInfo.dataValidator,
+                    serviceNode: fileInfo.serviceNode,
+                    sum: extendStorageDurationResponse.data.attributes.price + ""
+                };
+                await this.billingApiClient.payForStorageDurationExtension(payForFileStorageExtensionRequest);
+                resolve({success: true});
             } catch (error) {
+                console.log(error);
                 reject(error);
             }
         })
     }
 
-    public getFileInfo(fileId: string): Promise<DdsApiResponse<FileInfo>> {
-        return new Promise((resolve, reject) => {
+    public getFileInfo(fileId: string): Promise<DdsFileDto> {
+        console.log(`File id: ${fileId}`);
+        return new Promise<DdsFileDto>(resolve => {
+            this.filesRepository.findByDdsId(fileId).then(file => {
+                console.log(file);
+                resolve(localFileRecordToDdsFileDto(file));
+            })
+        })
+        /*
+        return new Promise<DdsApiResponse<FileInfo>>((resolve, reject) => {
             this.ddsApiClient.getFileInfo(fileId)
                 .then(({data}) => resolve(data))
                 .catch(error => {
@@ -181,50 +194,37 @@ export class FilesService {
                         reject(new DdsErrorException("DDS API is unreachable"));
                     }
                 })
-        })
+        })*/
     }
 
-    public getFile(fileId: string, httpResponse: Response): Promise<any> {
-        console.log(`Retrieving file with id ${fileId}`);
-        return this.ddsApiClient.getFile(fileId)
-            .then(({data}) => {
-                httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
-                data.pipe(httpResponse);
-            });
+    public async getFile(fileId: string, httpResponse: Response): Promise<any> {
+        /*
+        const {data} = await this.ddsApiClient.getFile(fileId);
+        httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
+        data.pipe(httpResponse);*/
+        httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
     }
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
         const additional = uploadFileDto.additional;
-        additional.extension = uploadFileDto.extension;
-        additional.size = uploadFileDto.size.toString(10);
-        additional.mimeType = uploadFileDto.mimeType;
+
+        const hashTags = JSON.stringify(uploadFileDto.additional.hashTags);
 
         return new Promise((resolve, reject) => {
             this.ddsApiClient.uploadFile({
-                additional: uploadFileDto.additional,
                 data: uploadFileDto.data,
-                duration: differenceInSeconds(
-                    parse(uploadFileDto.keepUntil,
-                        "yyyy-MM-dd'T'hh:mm:ss'Z'",
-                        addMonths(new Date(), 1)
-                    ), new Date()),
-                name: uploadFileDto.name
+                duration: differenceInSeconds(new Date(uploadFileDto.keepUntil), new Date()),
+                name: uploadFileDto.name,
+                additional: {
+                    ...additional,
+                    hashTags
+                }
             }).then(({data}) => {
-                resolve({
-                    ...data,
-                    data: {
-                        ...data.data,
-                        attributes: {
-                            ...data.data.attributes,
-                            price: data.data.attributes.price / 10000 // Gotta do this replacement because stub DDS service returns
-                                                                      // 100.5 ETH as storage price which is too huge.
-                                                                      // TODO: remove this replacement when DDS starts to make actual calculations
-                        }
-                    }
-                });
+                resolve(data);
             }).catch((ddsError: AxiosError) => {
                 console.log(ddsError);
                 if (ddsError.response) {
+                    console.log(ddsError.response.data.errors && ddsError.response.data.errors.reduce((error: any) => error + "; "));
                     reject(new DdsErrorException(`DDS responded with ${ddsError.response.status} status`, ddsError.response.status))
                 } else {
                     reject(new DdsErrorException(`DDS is unreachable`))
@@ -238,14 +238,15 @@ export class FilesService {
             this.billingApiClient.payForDataUpload({
                 sum: "" + price,
                 data_owner: uploadFileDto.dataOwnerAddress,
-                owner: uploadFileDto.dataValidatorAddress,
-                data_price: "" + price,
+                data_validator: uploadFileDto.dataValidatorAddress,
+                buy_sum: "" + uploadFileDto.price,
                 extension: uploadFileDto.extension,
                 id: fileId,
                 mime_type: uploadFileDto.mimeType,
                 name: uploadFileDto.name,
                 service_node: uploadFileDto.serviceNodeAddress,
-                size: uploadFileDto.size
+                size: uploadFileDto.size,
+                meta_data: JSON.stringify(uploadFileDto.additional)
             }).then(() => {
                 resolve();
             }).catch((billingError: AxiosError) => {
@@ -267,7 +268,6 @@ export class FilesService {
                         "yyyy-MM-dd'T'hh:mm:ss'Z'",
                         addMonths(new Date(), 1)
                     ), new Date()),
-                additional: extendFileStorageDurationDto.additional
             })
                 .then(({data}) => resolve(data))
                 .catch((error: AxiosError) => {

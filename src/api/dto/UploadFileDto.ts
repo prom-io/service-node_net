@@ -1,4 +1,4 @@
-import {IsDateString, IsInt, IsNotEmpty, IsString, Matches} from "class-validator";
+import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
 import {FileMetadata} from "./FileMetadata";
 
 export class UploadFileDto {
@@ -13,7 +13,8 @@ export class UploadFileDto {
             source.mimeType,
             source.size,
             source.serviceNodeAddress,
-            source.dataValidatorAddress
+            source.dataValidatorAddress,
+            source.price
         )
     }
 
@@ -72,8 +73,13 @@ export class UploadFileDto {
     )
     public dataValidatorAddress: string;
 
+    @IsNotEmpty({message: "Price must be specified"})
+    @IsNumber({allowNaN: false, allowInfinity: false}, {message: "Price must be a number"})
+    @IsPositive({message: "Price must be positive"})
+    public price: number;
 
-    constructor(keepUntil: string, name: string, data: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string) {
+
+    constructor(keepUntil: string, name: string, data: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.data = data;
@@ -84,6 +90,7 @@ export class UploadFileDto {
         this.size = size;
         this.serviceNodeAddress = serviceNodeAddress;
         this.dataValidatorAddress = dataValidatorAddress;
+        this.price = price;
     }
 }
 

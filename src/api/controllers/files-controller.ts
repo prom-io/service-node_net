@@ -72,15 +72,16 @@ export class FilesController implements IAppController {
         const fileId: string = request.params.fileId;
         const extendStorageDurationDto: ExtendFileStorageDurationDto = request.body;
         this.filesService.extendStorageDuration(fileId, extendStorageDurationDto)
-            .then(result => response.json({id: result.data.id, ...unwrapDdsApiResponse(result)}))
+            .then(result => response.json(result))
             .catch(error => next(error));
     }
 
     public async getFileInfo(request: Request, response: Response, next: NextFunction) {
         const fileId = request.params.fileId;
+        console.log("File id is " + fileId);
 
         this.filesService.getFileInfo(fileId)
-            .then(result => response.json({id: result.data.id, ...unwrapDdsApiResponse(result)}))
+            .then(result => response.json(result))
             .catch(error => next(error));
     }
 
