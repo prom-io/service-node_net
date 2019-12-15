@@ -25,21 +25,26 @@ export class TransactionsService {
     }
 
     public getTransactionsOfAddress(address: string, pagination: PaginationDto): Promise<TransactionDto[]> {
+        console.log(pagination);
         return new Promise<TransactionDto[]>((resolve, reject) => {
             this.billingApiClient.getTransactions(address, pagination.page, pagination.size)
-                .then(({data}) => resolve(data.data.map(transaction => ({
-                    id: transaction.id,
-                    value: Number(transaction.value),
-                    dataOwner: transaction.dataOwner,
-                    dataMart: transaction.dataMart,
-                    dataValidator: transaction.dataValidator,
-                    type: transaction.txType,
-                    status: transaction.status,
-                    hash: transaction.hash,
-                    serviceNode: transaction.serviceNode,
-                    blockNumber: transaction.blockNumber,
-                    queueNumber: transaction.queueNumber
-                }))))
+                .then(({data}) => {
+                    console.log(data);
+                    resolve(data.data.map(transaction => ({
+                        id: transaction.id,
+                        value: Number(transaction.value),
+                        dataOwner: transaction.dataOwner,
+                        dataMart: transaction.dataMart,
+                        dataValidator: transaction.dataValidator,
+                        type: transaction.txType,
+                        status: transaction.status,
+                        hash: transaction.hash,
+                        serviceNode: transaction.serviceNode,
+                        blockNumber: transaction.blockNumber,
+                        queueNumber: transaction.queueNumber,
+                        created_at: transaction.created_at
+                    })))
+                })
                 .catch((error: AxiosError) => {
                     console.log(error);
                     if (error.response) {

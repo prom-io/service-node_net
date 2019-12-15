@@ -1,7 +1,7 @@
 export const getValidPage = (page?: string | number, fallback: number = 1): number => {
     let returnedPage = Number(page);
 
-    if (isNaN(returnedPage) || returnedPage < 1) {
+    if (isNaN(returnedPage) || returnedPage < 0) {
         returnedPage = fallback;
     }
 

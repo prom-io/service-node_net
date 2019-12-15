@@ -28,6 +28,8 @@ export class TransactionsController implements IAppController {
         const {address} = request.params;
         const {page, size} = request.query;
 
+        console.log(page);
+
         const validPage = getValidPage(page);
         const validPageSize = getValidPageSize(size);
 
