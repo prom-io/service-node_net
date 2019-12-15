@@ -2,7 +2,7 @@
 
 export interface PayForDataUploadRequest {
     id: string,
-    owner: string,
+    data_validator: string,
     name: string,
     size: number,
     extension: string,
@@ -83,5 +83,5 @@ export interface TransactionResponse {
 export interface PayForFileStorageExtensionRequest {
     serviceNode: string,
     dataValidator: string,
-    sum: number
+    sum: string
 }

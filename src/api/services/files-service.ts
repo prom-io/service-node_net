@@ -2,6 +2,7 @@ import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import fileSystem from "fs";
+import path from "path";
 import uuid from "uuid/v4"
 import {BillingApiClient, PayForFileStorageExtensionRequest} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
@@ -114,11 +115,12 @@ export class FilesService {
                     ddsResponse.data.id
                 );
 
+                /*
                 await this.ddsApiClient.notifyPaymentStatus({
                     status: "success",
                     file_id: ddsResponse.data.id,
                     amount: storagePrice
-                });
+                });*/
                 
                 if (localFileId) {
                     this.filesRepository.findById(localFileId).then(localFile => {
@@ -153,21 +155,24 @@ export class FilesService {
         return new Promise(async (resolve, reject) => {
             try {
                 const fileInfo = await this.getFileInfo(fileId);
+                console.log(extendFileStorageDurationDto);
                 const extendStorageDurationResponse = await this.extendFileStorageDuration(fileId, extendFileStorageDurationDto);
                 const payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest = {
                     dataValidator: fileInfo.dataValidator,
                     serviceNode: fileInfo.serviceNode,
-                    sum: extendStorageDurationResponse.data.attributes.price
+                    sum: extendStorageDurationResponse.data.attributes.price + ""
                 };
                 await this.billingApiClient.payForStorageDurationExtension(payForFileStorageExtensionRequest);
-                return {success: true};
+                resolve({success: true});
             } catch (error) {
+                console.log(error);
                 reject(error);
             }
         })
     }
 
     public getFileInfo(fileId: string): Promise<DdsFileDto> {
+        console.log(`File id: ${fileId}`);
         return new Promise<DdsFileDto>(resolve => {
             this.filesRepository.findByDdsId(fileId).then(file => {
                 console.log(file);
@@ -193,9 +198,11 @@ export class FilesService {
     }
 
     public async getFile(fileId: string, httpResponse: Response): Promise<any> {
+        /*
         const {data} = await this.ddsApiClient.getFile(fileId);
         httpResponse.header('Content-Disposition', `attachment; filename=${fileId}`);
-        data.pipe(httpResponse);
+        data.pipe(httpResponse);*/
+        httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
     }
 
     private uploadFileToDds(uploadFileDto: UploadFileDto): Promise<DdsApiResponse<FileInfo>> {
@@ -231,7 +238,7 @@ export class FilesService {
             this.billingApiClient.payForDataUpload({
                 sum: "" + price,
                 data_owner: uploadFileDto.dataOwnerAddress,
-                owner: uploadFileDto.dataValidatorAddress,
+                data_validator: uploadFileDto.dataValidatorAddress,
                 buy_sum: "" + uploadFileDto.price,
                 extension: uploadFileDto.extension,
                 id: fileId,

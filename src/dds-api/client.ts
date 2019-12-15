@@ -1,5 +1,8 @@
 import Axios, {AxiosError, AxiosInstance, AxiosPromise} from "axios";
 import dateFormat from "dateformat";
+import fileSystem from "fs";
+import path from "path";
+import randomNumber from "random-number";
 import uuid4 from "uuid/v4";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
@@ -55,6 +58,36 @@ export class DdsApiClient implements IBootstrap {
     public uploadFile(request: UploadFileRequest): AxiosPromise<DdsApiResponse<UploadFileResponse>> {
 
         return new Promise((resolve, reject) => {
+            const id = uuid4();
+            fileSystem.writeFileSync(`${process.env.DDS_STUB_FILES_DIRECTORY}/${id}`, request.data, {encoding: "base64"});
+
+            resolve({
+                status: 200,
+                data: {
+                    data: {
+                        id,
+                        attributes: {
+                            price: randomNumber({
+                                min: 0.0000000069444,
+                                max: 1
+                            }),
+                            name: request.name,
+                            additional: request.additional,
+                            duration: request.duration || 2629743
+                        },
+                        links: {
+                            self: ""
+                        },
+                        type: DdsApiType.FILE
+                    }
+                },
+                config: {},
+                headers: {},
+                request: {},
+                statusText: "OK"
+            })
+
+            /*
             this.axiosInstance.post("/files", wrapDdsApiRequest(request, DdsApiType.FILE))
                 .catch((error: AxiosError) => {
                     if (error.response && error.response.status === 402) {
@@ -62,12 +95,40 @@ export class DdsApiClient implements IBootstrap {
                     } else {
                         reject(error);
                     }
-                })
+                })*/
         })
     }
 
     public extendFileStorageDuration(fileId: string, extendFileStorageRequest: ExtendFileStorageRequest): AxiosPromise<DdsApiResponse<ExtendFileStorageResponse>> {
+
         return new Promise((resolve, reject) => {
+            resolve({
+                status: 200,
+                data: {
+                    data: {
+                        id: fileId,
+                        attributes: {
+                            price: randomNumber({
+                                min: 0.0000000069444,
+                                max: 1
+                            }),
+                            name: "",
+                            additional: {},
+                            duration: extendFileStorageRequest.duration || 2629743
+                        },
+                        links: {
+                            self: ""
+                        },
+                        type: DdsApiType.FILE
+                    }
+                },
+                config: {},
+                headers: {},
+                request: {},
+                statusText: "OK"
+            })
+
+            /*
             this.axiosInstance.patch(`/files/${fileId}`, wrapDdsApiRequest(extendFileStorageRequest, DdsApiType.FILE))
                 .catch((error: AxiosError) => {
                     if (error.response && error.response.status === 402) {
@@ -75,7 +136,7 @@ export class DdsApiClient implements IBootstrap {
                     } else {
                         reject(error);
                     }
-                })
+                })*/
         })
     }
 
