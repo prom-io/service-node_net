@@ -40,7 +40,7 @@ export class FilesController implements IAppController {
         const pageParameter: string | undefined = request.query.page;
         const sizeParameter: string | undefined = request.query.size;
 
-        const paginationRequest: PaginationDto = {page: 1, size: 1000};
+        const paginationRequest: PaginationDto = {page: 0, size: 1000};
 
         if (pageParameter !== undefined && !isNaN(Number(pageParameter))) {
             paginationRequest.page = Number(pageParameter);

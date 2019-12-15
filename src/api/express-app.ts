@@ -45,9 +45,10 @@ export class ExpressApp implements IBootstrapping {
         const ddsApiClient = this.app.getModule("dds") as DdsApiClient;
         const billingApiClient = this.app.getModule("billing") as BillingApiClient;
         const dataStore = (this.app.getModule("db") as DB).getStore();
+        const filesRepository = new FilesRepository(dataStore);
 
-        const filesService = new FilesService(ddsApiClient, billingApiClient, new FilesRepository(dataStore));
-        const purchasesService = new PurchasesService(ddsApiClient, billingApiClient);
+        const filesService = new FilesService(ddsApiClient, billingApiClient, filesRepository);
+        const purchasesService = new PurchasesService(ddsApiClient, billingApiClient, filesRepository);
         const accountsService = new AccountsService(
             billingApiClient,
             new AccountsRepository(dataStore),

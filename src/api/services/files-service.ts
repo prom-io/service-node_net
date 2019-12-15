@@ -33,6 +33,13 @@ import {
     localFileRecordToLocalFileRecordDto
 } from "../utils";
 
+const IGNORED_FILES = [
+    "a9e5ec0f-517a-4292-b934-55ce578a473a",
+    "6eea0b0c-c462-429f-a958-dfb496fc5e4c",
+    "39bcd759-b547-4564-bb1e-6be03a23deda",
+    "39bcd759-b547-4564-bb1e-6be03a23deda",
+];
+
 export class FilesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;
@@ -46,7 +53,8 @@ export class FilesService {
 
     public async findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
         const {data} = await this.billingApiClient.getFiles(paginationDto.page, paginationDto.size);
-        return data.data.filter(file => file.id !== "a9e5ec0f-517a-4292-b934-55ce578a473a").map(file => billingFileToDdsFileResponse(file))
+        console.log(data);
+        return data.data.filter(file => !IGNORED_FILES.includes(file.id)).map(file => billingFileToDdsFileResponse(file))
     }
 
     public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
@@ -155,7 +163,6 @@ export class FilesService {
         return new Promise(async (resolve, reject) => {
             try {
                 const fileInfo = await this.getFileInfo(fileId);
-                console.log(extendFileStorageDurationDto);
                 const extendStorageDurationResponse = await this.extendFileStorageDuration(fileId, extendFileStorageDurationDto);
                 const payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest = {
                     dataValidator: fileInfo.dataValidator,
@@ -224,7 +231,6 @@ export class FilesService {
             }).catch((ddsError: AxiosError) => {
                 console.log(ddsError);
                 if (ddsError.response) {
-                    console.log(ddsError.response.data.errors && ddsError.response.data.errors.reduce((error: any) => error + "; "));
                     reject(new DdsErrorException(`DDS responded with ${ddsError.response.status} status`, ddsError.response.status))
                 } else {
                     reject(new DdsErrorException(`DDS is unreachable`))

@@ -1,5 +1,5 @@
 
-import {IsNotEmpty, IsString, Matches} from "class-validator";
+import {IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
 
 export class PurchaseDataDto {
     @IsNotEmpty({message: "File ID must be present"})
@@ -40,12 +40,18 @@ export class PurchaseDataDto {
     )
     public serviceNodeAddress: string;
 
+    @IsNotEmpty({message: "Price must be present"})
+    @IsNumber({allowInfinity: false, allowNaN: false}, {message: "Price must be number"})
+    @IsPositive({message: "Price must be positive"})
+    public price: number;
 
-    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, serviceNodeAddress: string) {
+
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, serviceNodeAddress: string, price: number) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
         this.dataOwnerAddress = dataOwnerAddress;
         this.serviceNodeAddress = serviceNodeAddress;
+        this.price = price;
     }
 }
