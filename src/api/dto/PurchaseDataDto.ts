@@ -45,7 +45,6 @@ export class PurchaseDataDto {
     @IsPositive({message: "Price must be positive"})
     public price: number;
 
-
     constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, serviceNodeAddress: string, price: number) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;

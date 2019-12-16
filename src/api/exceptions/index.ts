@@ -9,3 +9,5 @@ export * from "./AccountNotFoundException";
 export * from "./LocalFileNotFoundException";
 export * from "./LocalFileHasAlreadyBeenDeletedException";
 export * from "./LocalFileDeletionException";
+export * from "./NoAccountsRegisteredException";
+export * from "./NotServiceNodeAccountException";

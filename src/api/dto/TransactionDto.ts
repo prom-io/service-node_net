@@ -12,5 +12,6 @@ export interface TransactionDto {
     queueNumber: number,
     status: boolean,
     serviceNode: string,
+    created_at: string,
     type: TransactionType
 }

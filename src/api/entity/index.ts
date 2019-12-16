@@ -15,7 +15,8 @@ export interface IBaseEntity {
 
 export interface Account extends IBaseEntity{
     address: string,
-    accountType: string
+    accountType: string,
+    default: boolean
 }
 
 export interface LocalFileRecord extends IBaseEntity {

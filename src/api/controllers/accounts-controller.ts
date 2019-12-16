@@ -22,11 +22,20 @@ export class AccountsController implements IAppController {
         this.router.get("/accounts/:address/balance", this.getBalanceOfAccount);
         this.router.get("/accounts/balances", this.getBalancesOfAllAccounts);
         this.router.post("/accounts/data-owners", validationMiddleware(CreateDataOwnerDto), this.registerDataOwner);
+        this.router.patch("/accounts/:address/default", this.setDefaultAccount);
         this.router.get("/accounts/data-validators/:address/data-owners", this.getDataOwnersOfDataValidator);
     }
 
     public getRouter(): Router {
         return this.router;
+    }
+
+    public async setDefaultAccount(request: Request, response: Response, next: NextFunction) {
+        const {address} = request.params;
+
+        this.accountsService.setDefaultAccount(address)
+            .then(() => response.json({success: true}))
+            .catch(error => next(error))
     }
 
     public async registerAccount(request: Request, response: Response, next: NextFunction) {

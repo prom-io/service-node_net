@@ -1,5 +1,6 @@
 import {boundClass} from "autobind-decorator";
 import {NextFunction, Request, Response, Router} from "express";
+import {TransactionType} from "../../billing-api";
 import {TransactionsService} from "../services";
 import {getValidPage, getValidPageSize} from "../utils";
 import {IAppController} from "./IAppController";
@@ -26,16 +27,21 @@ export class TransactionsController implements IAppController {
 
     public async getTransactionsOfAddress(request: Request, response: Response, next: NextFunction) {
         const {address} = request.params;
-        const {page, size} = request.query;
-
-        console.log(page);
+        const {page, size, type} = request.query;
 
         const validPage = getValidPage(page);
         const validPageSize = getValidPageSize(size);
 
-        this.transactionsService.getTransactionsOfAddress(address, {page: validPage, size: validPageSize})
-            .then(result => response.json(result))
-            .catch(error => next(error));
+        if (type && (type === "dataUpload" || type === "dataPurchase")) {
+            const transactionType = type === "dataUpload" ? TransactionType.DATA_UPLOAD : TransactionType.DATA_PURCHASE;
+            this.transactionsService.getTransactionsOfAddressByType(address, transactionType, {page: validPage, size: validPageSize})
+                .then(result => response.json(result))
+                .catch(error => next(error));
+        } else {
+            this.transactionsService.getTransactionsOfAddress(address, {page: validPage, size: validPageSize})
+                .then(result => response.json(result))
+                .catch(error => next(error));
+        }
     }
 
     public async countTransactionsOfAddress(request: Request, response: Response, next: NextFunction) {

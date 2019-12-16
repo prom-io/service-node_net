@@ -5,9 +5,12 @@ import {Account, DataOwnersOfDataValidator, EntityType} from "../entity";
 import {
     AddressIsAlreadyRegisteredException,
     BillingApiErrorException,
-    InvalidAccountTypeException
+    InvalidAccountTypeException,
+    NoAccountsRegisteredException,
+    NotServiceNodeAccountException
 } from "../exceptions";
 import {AccountsRepository, DataOwnersOfDataValidatorRepository} from "../repositories";
+import {accountToAccountDto} from "../utils";
 
 export class AccountsService {
     private readonly billingApiClient: BillingApiClient;
@@ -47,7 +50,8 @@ export class AccountsService {
                     const account: Account = {
                         _type: EntityType.ACCOUNT,
                         accountType: registerAccountDto.type,
-                        address: registerAccountDto.address
+                        address: registerAccountDto.address,
+                        default: false
                     };
                     this.accountsRepository.save(account).then(() => resolve());
                 })
@@ -120,10 +124,7 @@ export class AccountsService {
     }
 
     public findLocalAccounts(): Promise<AccountDto[]> {
-        return this.accountsRepository.findAll().then(accounts => accounts.map(account => ({
-            type: account.accountType,
-            address: account.address
-        })));
+        return this.accountsRepository.findAll().then(accounts => accounts.map(account => accountToAccountDto(account)));
     }
 
     public getBalanceOfAccount(accountAddress: string): Promise<BalanceDto> {
@@ -156,5 +157,41 @@ export class AccountsService {
                     return result;
                 })
         })
+    }
+
+    public async setDefaultAccount(address: string): Promise<void> {
+        const account = await this.accountsRepository.findByAddress(address);
+
+        if (account.accountType !== "SERVICE_NODE") {
+            throw new NotServiceNodeAccountException(`Account ${address} is not service node`);
+        }
+
+        let accounts = await this.accountsRepository.findAll();
+
+        account.default = true;
+        accounts = accounts.filter(account => account.address !== address);
+
+        await this.accountsRepository.save(account);
+
+        for (const nonDefaultAccount of accounts) {
+            nonDefaultAccount.default = false;
+            await this.accountsRepository.save(account);
+        }
+    }
+
+    public async getDefaultAccount(): Promise<AccountDto> {
+        const accounts = (await this.accountsRepository.findAll()).filter(account => account.accountType === "SERVICE_NODE");
+
+        if (accounts.length === 0) {
+            throw new NoAccountsRegisteredException("No accounts registered on this service node");
+        }
+
+        if (accounts.filter(account => account.default).length === 0) {
+            return accountToAccountDto(accounts[0]);
+        } else {
+            return accounts.filter(account => account.default)
+                .map(account => accountToAccountDto(account))
+                .reduce(account => account)
+        }
     }
 }

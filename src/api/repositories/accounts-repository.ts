@@ -50,4 +50,16 @@ export class AccountsRepository {
             this.dataStore.find<Account>({_type: EntityType.ACCOUNT}, (_, documents) => resolve(documents));
         })
     }
+
+    public findByAddress(address: string): Promise<Account> {
+        return new Promise<Account>((resolve, reject) => {
+            this.dataStore.findOne<Account>({_type: EntityType.ACCOUNT}, (_, document) => {
+                if (document) {
+                    resolve(document);
+                } else {
+                    reject(new AccountNotFoundException(`Could not find account with address ${address}`));
+                }
+            })
+        })
+    }
 }

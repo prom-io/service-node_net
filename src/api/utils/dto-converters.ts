@@ -1,13 +1,13 @@
-
-import {BillingFileResponse} from "../../billing-api";
+import {BillingFileResponse, TransactionResponse} from "../../billing-api";
 import {
+    AccountDto,
     CreateLocalFileRecordDto,
     DdsFileDto,
     DdsFileUploadCheckResponse,
-    LocalFileRecordDto,
+    LocalFileRecordDto, TransactionDto,
     UploadFileDto
 } from "../dto";
-import {EntityType, LocalFileRecord} from "../entity";
+import {Account, EntityType, LocalFileRecord} from "../entity";
 
 export const createUploadFileDtoFromLocalFileRecord = (localFileRecord: LocalFileRecord, data: string): UploadFileDto => {
     return UploadFileDto.fromObject({
@@ -104,4 +104,25 @@ export const billingFileToDdsFileResponse = (billingFile: BillingFileResponse): 
     name: billingFile.name,
     serviceNode: "",
     size: billingFile.size
+});
+
+export const accountToAccountDto = (account: Account): AccountDto => ({
+    type: account.accountType,
+    address: account.address,
+    default: account.default
+});
+
+export const billingTransactionToTransactionDto = (transaction: TransactionResponse): TransactionDto => ({
+    id: transaction.id,
+    value: Number(transaction.value),
+    dataOwner: transaction.dataOwner,
+    dataMart: transaction.dataMart,
+    dataValidator: transaction.dataValidator,
+    type: transaction.txType,
+    status: transaction.status,
+    hash: transaction.hash,
+    serviceNode: transaction.serviceNode,
+    blockNumber: transaction.blockNumber,
+    queueNumber: transaction.queueNumber,
+    created_at: transaction.created_at
 });

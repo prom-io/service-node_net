@@ -1,7 +1,8 @@
 import {AxiosError} from "axios";
-import {BillingApiClient} from "../../billing-api";
+import {BillingApiClient, TransactionType} from "../../billing-api";
 import {PaginationDto, TransactionDto, TransactionsCountDto} from "../dto";
 import {BillingApiErrorException} from "../exceptions";
+import {billingTransactionToTransactionDto} from "../utils";
 
 export class TransactionsService {
     private readonly billingApiClient: BillingApiClient;
@@ -25,26 +26,26 @@ export class TransactionsService {
     }
 
     public getTransactionsOfAddress(address: string, pagination: PaginationDto): Promise<TransactionDto[]> {
-        console.log(pagination);
         return new Promise<TransactionDto[]>((resolve, reject) => {
             this.billingApiClient.getTransactions(address, pagination.page, pagination.size)
                 .then(({data}) => {
-                    console.log(data);
-                    resolve(data.data.map(transaction => ({
-                        id: transaction.id,
-                        value: Number(transaction.value),
-                        dataOwner: transaction.dataOwner,
-                        dataMart: transaction.dataMart,
-                        dataValidator: transaction.dataValidator,
-                        type: transaction.txType,
-                        status: transaction.status,
-                        hash: transaction.hash,
-                        serviceNode: transaction.serviceNode,
-                        blockNumber: transaction.blockNumber,
-                        queueNumber: transaction.queueNumber,
-                        created_at: transaction.created_at
-                    })))
+                    resolve(data.data.map(transaction => billingTransactionToTransactionDto(transaction)))
                 })
+                .catch((error: AxiosError) => {
+                    console.log(error);
+                    if (error.response) {
+                        reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
+                    } else {
+                        reject(new BillingApiErrorException("Billing API is unreachable"));
+                    }
+                })
+        })
+    }
+
+    public getTransactionsOfAddressByType(address: string, transactionType: TransactionType, pagination: PaginationDto) {
+        return new Promise<TransactionDto[]>((resolve, reject) => {
+            this.billingApiClient.getTransactionsOfAddressByType(address, transactionType, pagination.page, pagination.size)
+                .then(({data}) => resolve(data.data.map(transaction => billingTransactionToTransactionDto(transaction))))
                 .catch((error: AxiosError) => {
                     console.log(error);
                     if (error.response) {

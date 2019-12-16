@@ -3,14 +3,19 @@ import Axios, {AxiosInstance, AxiosPromise} from "axios";
 import App from "../application";
 import IBootstrap from "../common/interfaces/IBootstrap";
 import {
-    BalanceResponse, BillingFileResponse,
+    BalanceResponse,
+    BillingFileResponse,
     DataOwnersResponse,
-    GenericBillingApiResponse, PaginatedResponse,
+    GenericBillingApiResponse,
+    PaginatedResponse,
     PayForDataPurchaseRequest,
-    PayForDataUploadRequest, PayForFileStorageExtensionRequest,
+    PayForDataUploadRequest,
+    PayForFileStorageExtensionRequest,
     RegisterAccountRequest,
-    RegisterDataOwnerRequest, TransactionResponse
+    RegisterDataOwnerRequest,
+    TransactionResponse, TransactionType
 } from "./types";
+import {add} from "winston";
 
 @boundClass
 export class BillingApiClient implements IBootstrap {
@@ -70,5 +75,9 @@ export class BillingApiClient implements IBootstrap {
 
     public payForStorageDurationExtension(payForFileStorageExtensionRequest: PayForFileStorageExtensionRequest): AxiosPromise<void> {
         return this.axiosInstance.post("/wallet/extend/file/store", payForFileStorageExtensionRequest);
+    }
+
+    public getTransactionsOfAddressByType(address: string, type: TransactionType, page: number, pageSize: number): AxiosPromise<PaginatedResponse<TransactionResponse>> {
+        return this.axiosInstance.get(`/transaction/address/${address}/type/${type}/paginate/${page}/${pageSize}`);
     }
 }
