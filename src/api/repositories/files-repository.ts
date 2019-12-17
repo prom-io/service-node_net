@@ -16,7 +16,10 @@ export class FilesRepository {
                 if (document === null) {
                     this.dataStore.insert<LocalFileRecord>(localFileRecord, (error, saved) => resolve(saved));
                 } else {
-                    this.dataStore.update<LocalFileRecord>(document, localFileRecord, {}, () => resolve(localFileRecord));
+                    this.dataStore.update<LocalFileRecord>(document, localFileRecord, {}, (_, numberOfUpdated) => {
+                        console.log(`Number of updated documents ${numberOfUpdated}`);
+                        resolve(localFileRecord)
+                    });
                 }
             })
         })

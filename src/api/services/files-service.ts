@@ -2,9 +2,8 @@ import {AxiosError} from "axios";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import fileSystem from "fs";
-import path from "path";
 import uuid from "uuid/v4"
-import {BillingApiClient, PayForFileStorageExtensionRequest} from "../../billing-api";
+import {BillingApiClient, PayForDataUploadResponse, PayForFileStorageExtensionRequest} from "../../billing-api";
 import {DdsApiClient, DdsApiResponse, ExtendFileStorageResponse, FileInfo} from "../../dds-api";
 import {
     CreateLocalFileRecordDto,
@@ -53,7 +52,6 @@ export class FilesService {
 
     public async findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
         const {data} = await this.billingApiClient.getFiles(paginationDto.page, paginationDto.size);
-        console.log(data);
         return data.data.filter(file => !IGNORED_FILES.includes(file.id)).map(file => billingFileToDdsFileResponse(file))
     }
 
@@ -108,20 +106,23 @@ export class FilesService {
 
     public async checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
         const localFile = await this.filesRepository.findById(localFileId);
+        console.log(localFile);
         return createDdsFileUploadCheckResponseFromLocalFileRecord(localFile);
     }
 
     // tslint:disable-next-line:no-unnecessary-initializer
-    public uploadData(uploadFileDto: UploadFileDto, localFileId: string | undefined = undefined): Promise<DdsApiResponse<FileInfo>> {
+    public uploadData(uploadFileDto: UploadFileDto, localFileId: string | undefined = undefined): Promise<DdsApiResponse<FileInfo> & PayForDataUploadResponse> {
         return new Promise(async (resolve, reject) => {
             try {
                 const ddsResponse = await this.uploadFileToDds(uploadFileDto);
                 const storagePrice = ddsResponse.data.attributes.price;
-                await this.payForDataUpload(
+                const payForDataUploadResponse = await this.payForDataUpload(
                     uploadFileDto,
                     storagePrice,
                     ddsResponse.data.id
                 );
+                console.log("Pay for upload response");
+                console.log(payForDataUploadResponse);
 
                 /*
                 await this.ddsApiClient.notifyPaymentStatus({
@@ -137,8 +138,13 @@ export class FilesService {
                         localFile.storagePrice = storagePrice;
                         localFile.ddsId = ddsResponse.data.id;
                         localFile.uploadedToDds = true;
+                        localFile.dataOwnerAddress = payForDataUploadResponse.address;
+                        localFile.privateKey = payForDataUploadResponse.privateKey;
 
-                        this.filesRepository.save(localFile).then(() => resolve(ddsResponse));
+                        this.filesRepository.save(localFile).then(() => resolve({
+                            ...ddsResponse,
+                            ...payForDataUploadResponse
+                        }));
                     });
                 }
             } catch (error) {
@@ -149,9 +155,11 @@ export class FilesService {
                 }
 
                 if (localFileId) {
+                    console.log("saving local file");
                     this.filesRepository.findById(localFileId)
                         .then(localFile => {
                             localFile.failed = true;
+                            console.log(localFile);
                             this.filesRepository.save(localFile).then(() => reject(error));
                         });
                 }
@@ -239,11 +247,14 @@ export class FilesService {
         })
     }
 
-    private payForDataUpload(uploadFileDto: UploadFileDto, price: number, fileId: string): Promise<any> {
+    private payForDataUpload(uploadFileDto: UploadFileDto, price: number, fileId: string): Promise<PayForDataUploadResponse> {
+        const dataOwnerAddress = uploadFileDto.dataOwnerAddress === "0x0" || uploadFileDto.dataOwnerAddress === undefined
+            ? undefined
+            : uploadFileDto.dataOwnerAddress;
         return new Promise<any>((resolve, reject) => {
             this.billingApiClient.payForDataUpload({
                 sum: "" + price,
-                data_owner: uploadFileDto.dataOwnerAddress,
+                data_owner: dataOwnerAddress,
                 data_validator: uploadFileDto.dataValidatorAddress,
                 buy_sum: "" + uploadFileDto.price,
                 extension: uploadFileDto.extension,
@@ -253,8 +264,8 @@ export class FilesService {
                 service_node: uploadFileDto.serviceNodeAddress,
                 size: uploadFileDto.size,
                 meta_data: JSON.stringify(uploadFileDto.additional)
-            }).then(() => {
-                resolve();
+            }).then(({data}) => {
+                resolve(data);
             }).catch((billingError: AxiosError) => {
                 console.log(billingError);
                 if (billingError.response) {

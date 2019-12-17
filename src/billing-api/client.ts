@@ -9,7 +9,7 @@ import {
     GenericBillingApiResponse,
     PaginatedResponse,
     PayForDataPurchaseRequest,
-    PayForDataUploadRequest,
+    PayForDataUploadRequest, PayForDataUploadResponse,
     PayForFileStorageExtensionRequest,
     RegisterAccountRequest,
     RegisterDataOwnerRequest,
@@ -33,7 +33,7 @@ export class BillingApiClient implements IBootstrap {
         return;
     }
 
-    public payForDataUpload(payForDataUploadRequest: PayForDataUploadRequest): AxiosPromise<GenericBillingApiResponse> {
+    public payForDataUpload(payForDataUploadRequest: PayForDataUploadRequest): AxiosPromise<PayForDataUploadResponse> {
         return this.axiosInstance.post('/data/upload/pay', payForDataUploadRequest);
     }
 

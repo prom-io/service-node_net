@@ -135,7 +135,7 @@ export class AccountsService {
                     balance: Number(data.balance)
                 }))
                 .catch((error: AxiosError) => {
-                    console.log(error);
+                    // console.log(error);
                     if (error.response) {
                         reject(new BillingApiErrorException(`Billing API responded with ${error.response.status} status`));
                     } else {

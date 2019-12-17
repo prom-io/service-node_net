@@ -28,14 +28,15 @@ export interface LocalFileRecord extends IBaseEntity {
     metadata: FileMetadata,
     serviceNodeAddress: string,
     dataValidatorAddress: string,
-    dataOwnerAddress: string,
+    dataOwnerAddress?: string,
+    privateKey?: string,
     keepUntil: string,
     uploadedToDds: boolean,
     failed: boolean,
     ddsId?: string,
     price: number,
     storagePrice?: number,
-    deletedLocally: boolean
+    deletedLocally: boolean,
 }
 
 export interface DataOwnersOfDataValidator extends IBaseEntity {

@@ -32,7 +32,9 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
             price: localFileRecord.price,
             failed: false,
             fullyUploaded: true,
-            storagePrice: localFileRecord.storagePrice
+            storagePrice: localFileRecord.storagePrice,
+            dataOwner: localFileRecord.dataOwnerAddress,
+            privateKey: localFileRecord.privateKey
         }
     } else if (localFileRecord.failed) {
         return {
@@ -59,12 +61,12 @@ export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordD
         size: createLocalFileRecordDto.size,
         dataValidatorAddress: createLocalFileRecordDto.dataValidatorAddress,
         serviceNodeAddress: createLocalFileRecordDto.serviceNodeAddress,
-        dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress,
+        dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress || "0x0",
         keepUntil: createLocalFileRecordDto.keepUntil,
         uploadedToDds: false,
         failed: false,
         deletedLocally: false,
-        price: createLocalFileRecordDto.price
+        price: createLocalFileRecordDto.price,
     };
 };
 

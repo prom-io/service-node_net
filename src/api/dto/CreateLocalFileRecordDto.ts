@@ -1,4 +1,4 @@
-import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
+import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Matches} from "class-validator";
 import {FileMetadata} from "./FileMetadata";
 
 export class CreateLocalFileRecordDto {
@@ -11,7 +11,7 @@ export class CreateLocalFileRecordDto {
     public name: string;
     public additional: FileMetadata;
 
-    @IsNotEmpty({message: "Data owner address must be specified"})
+    @IsOptional()
     @IsString({message: "Data owner address must be string"})
     @Matches(
         new RegExp("^0x[a-fA-F0-9]{40}$"),
@@ -19,7 +19,7 @@ export class CreateLocalFileRecordDto {
             message: "Data owner address must be valid Ethereum address"
         }
     )
-    public dataOwnerAddress: string;
+    public dataOwnerAddress?: string;
 
     @IsNotEmpty({message: "File extension must be present"})
     @IsString({message: "File extension must be string"})
@@ -58,7 +58,7 @@ export class CreateLocalFileRecordDto {
     @IsPositive({message: "Price must be positive"})
     public price: number;
 
-    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
+    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string | undefined, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.additional = additional;

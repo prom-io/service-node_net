@@ -6,7 +6,7 @@ export interface DdsFileDto {
     id: string,
     metadata: FileMetadata,
     dataValidator: string,
-    dataOwner: string,
+    dataOwner?: string,
     serviceNode: string,
     keepUntil: string,
     extension: string,

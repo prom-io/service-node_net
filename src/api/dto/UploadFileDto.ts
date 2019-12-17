@@ -1,4 +1,4 @@
-import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
+import {IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Matches} from "class-validator";
 import {FileMetadata} from "./FileMetadata";
 
 export class UploadFileDto {
@@ -31,7 +31,7 @@ export class UploadFileDto {
     public data: string;
     public additional: FileMetadata;
 
-    @IsNotEmpty({message: "Data owner address must be specified"})
+    @IsOptional()
     @IsString({message: "Data owner address must be string"})
     @Matches(
         new RegExp("^0x[a-fA-F0-9]{40}$"),
@@ -39,7 +39,7 @@ export class UploadFileDto {
             message: "Data owner address must be valid Ethereum address"
         }
     )
-    public dataOwnerAddress: string;
+    public dataOwnerAddress?: string;
 
     @IsNotEmpty({message: "File extension must be present"})
     @IsString({message: "File extension must be string"})
@@ -79,7 +79,7 @@ export class UploadFileDto {
     public price: number;
 
 
-    constructor(keepUntil: string, name: string, data: string, additional: FileMetadata, dataOwnerAddress: string, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
+    constructor(keepUntil: string, name: string, data: string, additional: FileMetadata, dataOwnerAddress: string | undefined, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.data = data;

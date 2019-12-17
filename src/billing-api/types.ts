@@ -8,10 +8,15 @@ export interface PayForDataUploadRequest {
     extension: string,
     mime_type: string,
     service_node: string,
-    data_owner: string,
+    data_owner?: string,
     buy_sum: string,
     sum: string,
     meta_data: string
+}
+
+export interface PayForDataUploadResponse {
+    address: string,
+    privateKey: string
 }
 
 export interface PayForDataPurchaseRequest {
