@@ -6,7 +6,7 @@ import {LocalFileNotFoundException} from "../exceptions";
 export class FilesRepository {
     private readonly dataStore: DataStore;
 
-    constructor(dataStore: Nedb<any>) {
+    constructor(dataStore: DataStore<any>) {
         this.dataStore = dataStore;
     }
 
@@ -17,7 +17,6 @@ export class FilesRepository {
                     this.dataStore.insert<LocalFileRecord>(localFileRecord, (error, saved) => resolve(saved));
                 } else {
                     this.dataStore.update<LocalFileRecord>(document, localFileRecord, {}, (_, numberOfUpdated) => {
-                        console.log(`Number of updated documents ${numberOfUpdated}`);
                         resolve(localFileRecord)
                     });
                 }

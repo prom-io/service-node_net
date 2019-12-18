@@ -106,7 +106,6 @@ export class FilesService {
 
     public async checkIfLocalFileFullyUploadedToDds(localFileId: string): Promise<DdsFileUploadCheckResponse> {
         const localFile = await this.filesRepository.findById(localFileId);
-        console.log(localFile);
         return createDdsFileUploadCheckResponseFromLocalFileRecord(localFile);
     }
 
@@ -121,8 +120,6 @@ export class FilesService {
                     storagePrice,
                     ddsResponse.data.id
                 );
-                console.log("Pay for upload response");
-                console.log(payForDataUploadResponse);
 
                 /*
                 await this.ddsApiClient.notifyPaymentStatus({
@@ -155,11 +152,9 @@ export class FilesService {
                 }
 
                 if (localFileId) {
-                    console.log("saving local file");
                     this.filesRepository.findById(localFileId)
                         .then(localFile => {
                             localFile.failed = true;
-                            console.log(localFile);
                             this.filesRepository.save(localFile).then(() => reject(error));
                         });
                 }
@@ -187,12 +182,8 @@ export class FilesService {
     }
 
     public getFileInfo(fileId: string): Promise<DdsFileDto> {
-        console.log(`File id: ${fileId}`);
         return new Promise<DdsFileDto>(resolve => {
-            this.filesRepository.findByDdsId(fileId).then(file => {
-                console.log(file);
-                resolve(localFileRecordToDdsFileDto(file));
-            })
+            this.filesRepository.findByDdsId(fileId).then(file => resolve(localFileRecordToDdsFileDto(file)))
         })
         /*
         return new Promise<DdsApiResponse<FileInfo>>((resolve, reject) => {
