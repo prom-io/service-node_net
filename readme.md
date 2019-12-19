@@ -17,12 +17,7 @@
 
 ## Description
 
-Service node is an application which will act 
-as an intermediate layer between data validators, 
-data buyers and data marts. Service node uses 
-modified ethereum protocol under the hood. 
-It will store encrypted data in a distributed data storage, 
-and metadata in ethereum blockchain. 
+Service node is an application which will act as an intermediate layer between Data Validators and Data marts. Service node uses modified ethereum protocol under the hood. It will store encrypted data in a distributed data storage, and metadata in ethereum blockchain. 
 
 Bootstrap node stores information about connected nodes 
 in a distributed hash table (DHT).
