@@ -4,16 +4,19 @@ import {DdsApiClient, DdsApiResponse, FileInfo} from "../../dds-api";
 import {PurchaseDataDto} from "../dto";
 import {BillingApiErrorException, DdsErrorException, FileNotFoundException} from "../exceptions";
 import {FilesRepository} from "../repositories";
+import {AccountsService} from "./accounts-service";
 
 export class PurchasesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;
     private filesRepository: FilesRepository;
+    private accountsService: AccountsService;
 
-    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient, filesRepository: FilesRepository) {
+    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient, filesRepository: FilesRepository, accountsService: AccountsService) {
         this.ddsApiClient = ddsApiClient;
         this.billingApiClient = billingApiClient;
         this.filesRepository = filesRepository;
+        this.accountsService = accountsService;
     }
 
     public purchaseData(purchaseDataDto: PurchaseDataDto): Promise<any> {
@@ -50,14 +53,15 @@ export class PurchasesService {
         })
     };
 
-    private makeDataPurchase(purchaseDataDto: PurchaseDataDto, dataPrice: number): Promise<any> {
+    private async makeDataPurchase(purchaseDataDto: PurchaseDataDto, dataPrice: number): Promise<any> {
+        const serviceNodeAddress = (await this.accountsService.getDefaultAccount()).address;
         return new Promise<any>((resolve, reject) => {
             this.billingApiClient.payForDataPurchase({
                 id: purchaseDataDto.fileId,
                 data_validator: purchaseDataDto.dataValidatorAddress,
                 owner: purchaseDataDto.dataMartAddress,
                 sum: "" + dataPrice,
-                service_node: purchaseDataDto.serviceNodeAddress,
+                service_node: serviceNodeAddress,
                 data_mart: purchaseDataDto.dataMartAddress,
                 data_owner: purchaseDataDto.dataOwnerAddress
             }).then((response: any) => {

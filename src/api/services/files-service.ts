@@ -31,23 +31,26 @@ import {
     localFileRecordToDdsFileDto,
     localFileRecordToLocalFileRecordDto
 } from "../utils";
+import {AccountsService} from "./accounts-service";
 
 const IGNORED_FILES = [
     "a9e5ec0f-517a-4292-b934-55ce578a473a",
     "6eea0b0c-c462-429f-a958-dfb496fc5e4c",
     "39bcd759-b547-4564-bb1e-6be03a23deda",
-    "39bcd759-b547-4564-bb1e-6be03a23deda",
+    ""
 ];
 
 export class FilesService {
     private ddsApiClient: DdsApiClient;
     private billingApiClient: BillingApiClient;
     private filesRepository: FilesRepository;
+    private accountsService: AccountsService;
 
-    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient, filesRepository: FilesRepository) {
+    constructor(ddsApiClient: DdsApiClient, billingApiClient: BillingApiClient, filesRepository: FilesRepository, accountsService: AccountsService) {
         this.ddsApiClient = ddsApiClient;
         this.billingApiClient = billingApiClient;
         this.filesRepository = filesRepository;
+        this.accountsService = accountsService;
     }
 
     public async findAllFiles(paginationDto: PaginationDto): Promise<DdsFileDto[]> {
@@ -55,14 +58,16 @@ export class FilesService {
         return data.data.filter(file => !IGNORED_FILES.includes(file.id)).map(file => billingFileToDdsFileResponse(file))
     }
 
-    public createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
+    public async createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordDto> {
         const fileId = uuid();
+        const serviceNodeAddress = (await this.accountsService.getDefaultAccount()).address;
         const localPath = `${process.env.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
         fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
         const localFile: LocalFileRecord = createLocalFileRecordDtoToLocalFileRecord(
             createLocalFileRecordDto,
             fileId,
-            localPath
+            localPath,
+            serviceNodeAddress
         );
 
         return this.filesRepository.save(localFile).then(saved => localFileRecordToLocalFileRecordDto(saved));
