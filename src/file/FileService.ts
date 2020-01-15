@@ -9,7 +9,8 @@ import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} fr
 import {LocalFileRecord} from "./LocalFileRecord";
 import {
     createDdsFileUploadCheckResponseFromLocalFileRecord,
-    createLocalFileRecordDtoToLocalFileRecord, localFileRecordToDdsFileResponse,
+    createLocalFileRecordDtoToLocalFileRecord,
+    localFileRecordToDdsFileResponse,
     localFileRecordToDdsUploadRequest,
     localFileRecordToLocalFileRecordResponse,
     localFileRecordToPayForDataUploadRequest
@@ -23,6 +24,7 @@ import {UploadFileRequest} from "../dds-api/types/request";
 import {DdsApiResponse} from "../dds-api/types/response";
 import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
+import {FileUploadingStage} from "./types";
 
 @Injectable()
 export class FileService {
@@ -155,7 +157,7 @@ export class FileService {
 
     private async processDataUploading(localFile: LocalFileRecord, data: string): Promise<void> {
         this.log.debug(`Started processing data uploading - ${localFile._id}`);
-        let stage: "ddsUpload" | "billingProcessing" | "ddsPaymentNotification" | "localFileStatusUpdate" = "ddsUpload";
+        let stage: FileUploadingStage = FileUploadingStage.DDS_UPLOAD;
 
         try {
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
@@ -165,7 +167,7 @@ export class FileService {
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
             this.log.debug(`Assigned DDS ID is ${ddsResponse.data.id} - ${localFile._id}`);
-            stage = "billingProcessing";
+            stage = FileUploadingStage.BILLING_PROCESSING;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
             const payForDataUploadResponse = await this.payForDataUpload(
@@ -175,7 +177,7 @@ export class FileService {
             );
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
-            stage = "ddsPaymentNotification";
+            stage = FileUploadingStage.DDS_PAYMENT_NOTIFICATION;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
             await this.ddsApiClient.notifyPaymentStatus({
@@ -198,7 +200,10 @@ export class FileService {
             this.log.debug(`File uploading has been completed - ${localFile._id}`);
         } catch (error) {
             this.log.error(`Data upload failed at stage: ${stage}`);
-            console.log(error);
+
+            if (error.response) {
+                console.log(error.response.data);
+            }
 
             localFile.failed = true;
 
