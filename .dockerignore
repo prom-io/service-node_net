@@ -1,5 +1,3 @@
-go-ethereum
-go-ethereum/**/
 src
 src/**/
 node_modules
