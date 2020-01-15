@@ -24,6 +24,9 @@ export class BillingApiClient {
     }
 
     public payForDataUpload(payForDataUploadRequest: PayForDataUploadRequest): AxiosPromise<PayForDataUploadResponse> {
+        if (payForDataUploadRequest.data_owner === "0x0") {
+            payForDataUploadRequest.data_owner = undefined;
+        }
         return this.axios.post("/data/upload/pay", payForDataUploadRequest);
     }
 
