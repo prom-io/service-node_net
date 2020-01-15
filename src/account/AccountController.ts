@@ -15,7 +15,7 @@ export class AccountController {
     }
 
     @Get("data-validators/:address/data-owners")
-    public getDataOwnersOfDataValidator(@Param() address: string): Promise<DataOwnersOfDataValidatorResponse> {
+    public getDataOwnersOfDataValidator(@Param("address") address: string): Promise<DataOwnersOfDataValidatorResponse> {
         return this.accountService.getDataOwnersOfDataValidator(address);
     }
 
@@ -35,7 +35,7 @@ export class AccountController {
     }
 
     @Patch(":address/default")
-    public async setDefaultAccount(@Param() address: string): Promise<void> {
+    public async setDefaultAccount(@Param("address") address: string): Promise<void> {
         await this.accountService.setDefaultAccount(address);
     }
 }
