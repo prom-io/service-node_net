@@ -25,7 +25,7 @@ export class AccountController {
     }
 
     @Get(":address/balance")
-    public getBalanceOfAccount(@Param() address: string): Promise<BalanceOfAccountResponse> {
+    public getBalanceOfAccount(@Param("address") address: string): Promise<BalanceOfAccountResponse> {
         return this.accountService.getBalanceOfAccount(address);
     }
 
