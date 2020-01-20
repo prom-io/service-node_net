@@ -1,4 +1,4 @@
 export const getRandomElement = <Type>(array: Type[]): Type => {
-    const randomIndex = Math.floor(Math.random() * (array.length + 1));
+    const randomIndex = Math.floor(Math.random() * array.length);
     return array[randomIndex];
 };
