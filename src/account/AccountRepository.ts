@@ -48,8 +48,8 @@ export class AccountRepository {
     }
 
     public findByAddress(address: string): Promise<Account | null> {
-        return new Promise<Account>((resolve, reject) => {
-            this.dataStore.findOne<Account>({_type: EntityType.ACCOUNT}, (_, document) => {
+        return new Promise<Account>(resolve => {
+            this.dataStore.findOne<Account>({_type: EntityType.ACCOUNT, address}, (_, document) => {
                 resolve(document);
             })
         })

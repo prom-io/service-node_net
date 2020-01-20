@@ -6,6 +6,7 @@ import {BillingApiModule} from "./billing-api";
 import {FileModule} from "./file";
 import {TransactionModule} from "./transaction";
 import {PurchaseModule} from "./purchase";
+import {DiscoveryModule} from "./discovery";
 
 @Module({
     imports: [
@@ -15,7 +16,8 @@ import {PurchaseModule} from "./purchase";
         BillingApiModule,
         FileModule,
         TransactionModule,
-        PurchaseModule
+        PurchaseModule,
+        DiscoveryModule
     ]
 })
 export class AppModule {}

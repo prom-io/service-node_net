@@ -21,4 +21,10 @@ export class EnvConfig {
 
     @Env({required: true, type: "string"})
     NEDB_DIRECTORY: string;
+
+    @Env({type: "boolean"})
+    IS_BOOTSTRAP_NODE: boolean = false;
+
+    @Env({type: "number"})
+    BOOTSTRAP_NODE_PORT = 12345;
 }
