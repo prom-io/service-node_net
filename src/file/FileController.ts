@@ -1,12 +1,23 @@
-import {Controller, Body, Get, Post, Patch, Param, Res, Delete, HttpCode, HttpStatus} from "@nestjs/common";
+import {Controller, Body, Get, Post, Patch, Param, Res, Delete, HttpCode, HttpStatus, Query} from "@nestjs/common";
 import {Response} from "express";
 import {FileService} from "./FileService";
 import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto} from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
+import {getValidPage, getValidPageSize} from "../utils/pagination";
 
 @Controller("api/v1/files")
 export class FileController {
     constructor(private readonly fileService: FileService) {
+    }
+
+    @Get()
+    public async getFiles(
+        @Query("page") page?: string | number,
+        @Query("size") size?: string | number
+    ): Promise<DdsFileResponse[]> {
+        const pageParameter = getValidPage(page);
+        const pageSizeParameter = getValidPageSize(size);
+        return this.fileService.getFiles(pageParameter, pageSizeParameter);
     }
 
     @Get(":fileId")

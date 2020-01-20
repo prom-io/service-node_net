@@ -8,6 +8,7 @@ import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto} 
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {LocalFileRecord} from "./LocalFileRecord";
 import {
+    billingFileToDdsFileResponse,
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
     localFileRecordToDdsFileResponse,
@@ -41,6 +42,22 @@ export class FileService {
         const {data} = await this.ddsApiClient.getFile(fileId);
         httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
         data.pipe(httpResponse);
+    }
+
+    public async getFiles(page: number, pageSize: number): Promise<DdsFileResponse[]> {
+        try {
+            const files = (await this.billingApiClient.getFiles(page, pageSize)).data.data;
+            return files.map(billingFile => billingFileToDdsFileResponse(billingFile));
+        } catch (error) {
+            if (error.response) {
+                this.log.error(`Billing API responded with ${error.response.status} status`);
+                console.log(error.response.data);
+                throw new HttpException(`Billing API responded with ${error.response.status} status`, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                this.log.error("Billing API is unreachable");
+                throw new HttpException("Billing API is unreachable", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 
     public async getFileInfo(fileId: string): Promise<DdsFileResponse> {
