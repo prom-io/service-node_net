@@ -8,7 +8,7 @@ const bootstrapNodes: {bootstrapNodes: BootstrapNode[]} = require("../../bootstr
 export class DefaultBootstrapNodesContainer implements OnModuleInit {
     private bootstrapNodes: BootstrapNode[] = [];
 
-    onModuleInit(): any {
+    public onModuleInit(): void {
         console.log(bootstrapNodes);
         this.bootstrapNodes = bootstrapNodes.bootstrapNodes;
     }
