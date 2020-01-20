@@ -9,6 +9,7 @@ import {
 import {LoggerService} from "nest-logger";
 import Axios from "axios";
 import uuid from "uuid/v4";
+import uniqBy from "lodash.uniqby";
 import {DefaultBootstrapNodesContainer} from "./DefaultBootstrapNodesContainer";
 import {NodeType} from "./types";
 import {getIpAddress} from "../utils/ip";
@@ -50,7 +51,7 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
     }
 
     public async onApplicationBootstrap(): Promise<any> {
-        const ipAddress = "0.0.0.0";
+        const ipAddress = await getIpAddress(config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION);
         if (this.libp2pNode !== null) {
             this.log.info("Starting up bootstrap node");
             this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/${ipAddress}/tcp/${config.BOOTSTRAP_NODE_PORT}`);
@@ -59,14 +60,16 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
                 this.bootstrapNodeStarted = true;
                 this.log.info("Started bootstrap node");
                 this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
-                console.log(this.libp2pNode.peerInfo);
                 this.libp2pNode.pubsub.subscribe("node_registration", (message: any) => {
                     this.log.debug("Message received");
-                    console.log(message);
                     const node: NodeResponse = JSON.parse(message.data.toString());
-                    console.log(node);
                     this.registeredNodes.push(node);
+                    this.registeredNodes = uniqBy(this.registeredNodes, "id");
                 });
+                this.libp2pNode.on("peer:connect", (peer: any) => {
+                   this.log.debug(`Connected to peer ${peer.id.toB58String()}`);
+                   this.registeredNodes.forEach(node => this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(node))));
+                })
             });
         } else {
             await this.registerSelf(ipAddress);

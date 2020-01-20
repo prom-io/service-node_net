@@ -27,4 +27,7 @@ export class EnvConfig {
 
     @Env({type: "number"})
     BOOTSTRAP_NODE_PORT = 12345;
+
+    @Env({type: "boolean"})
+    USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION = false;
 }
