@@ -22,7 +22,7 @@ export class FileController {
 
     @Get(":fileId")
     public async getFile(@Param("fileId") fileId: string, @Res() response: Response): Promise<void> {
-        this.fileService.getFile(fileId, response);
+        await this.fileService.getFile(fileId, response);
     }
 
     @Patch(":fileId")

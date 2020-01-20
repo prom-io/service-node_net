@@ -39,9 +39,15 @@ export class FileService {
     }
 
     public async getFile(fileId: string, httpResponse: Response): Promise<void> {
-        const {data} = await this.ddsApiClient.getFile(fileId);
-        httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
-        data.pipe(httpResponse);
+        try {
+            this.log.debug(`Retrieving file with id ${fileId}`);
+            const {data} = await this.ddsApiClient.getFile(fileId);
+            this.log.debug(`Retrieved file with id ${fileId}`);
+            httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
+            data.pipe(httpResponse);
+        } catch (error) {
+            throw error;
+        }
     }
 
     public async getFiles(page: number, pageSize: number): Promise<DdsFileResponse[]> {
