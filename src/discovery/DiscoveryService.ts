@@ -7,14 +7,15 @@ import {
     OnApplicationShutdown
 } from "@nestjs/common";
 import {LoggerService} from "nest-logger";
+import {Cron} from "nest-schedule";
 import Axios from "axios";
 import uuid from "uuid/v4";
 import uniqBy from "lodash.uniqby";
 import {DefaultBootstrapNodesContainer} from "./DefaultBootstrapNodesContainer";
 import {NodeType} from "./types";
-import {getIpAddress} from "../utils/ip";
 import {RegisterNodeRequest} from "./types/request";
 import {NodeResponse} from "./types/response";
+import {getIpAddress} from "../utils/ip";
 import {getRandomElement} from "../utils/random-element";
 import {config} from "../config";
 
@@ -31,6 +32,24 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
 
     public getNodes(): NodeResponse[] {
         return this.registeredNodes;
+    }
+
+    @Cron("*/10 * * * *", {
+        waiting: true
+    })
+    public async checkNodesStatus(): Promise<void> {
+        if (config.IS_BOOTSTRAP_NODE) {
+            this.log.info("Checking status of registered nodes");
+            for (const node of this.registeredNodes) {
+                try {
+                    await Axios.get(`http://${node.ipAddress}:${node.port}/api/v1/status`)
+                } catch (error) {
+                    this.log.info(`Node with IP ${node.ipAddress} and id ${node.id} seems to be down, removing it`);
+                    this.registeredNodes = this.registeredNodes.filter(registeredNode => registeredNode.id !== node.id);
+                    this.libp2pNode.pubsub.publish("node_deletion", Buffer.from(JSON.stringify({nodeId: node.id})));
+                }
+            }
+        }
     }
 
     public async registerNode(registerNodeRequest: RegisterNodeRequest): Promise<NodeResponse> {
@@ -60,20 +79,38 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
                 this.bootstrapNodeStarted = true;
                 this.log.info("Started bootstrap node");
                 this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
-                this.libp2pNode.pubsub.subscribe("node_registration", (message: any) => {
-                    this.log.debug("Message received");
-                    const node: NodeResponse = JSON.parse(message.data.toString());
-                    this.registeredNodes.push(node);
-                    this.registeredNodes = uniqBy(this.registeredNodes, "id");
-                });
-                this.libp2pNode.on("peer:connect", (peer: any) => {
-                   this.log.debug(`Connected to peer ${peer.id.toB58String()}`);
-                   this.registeredNodes.forEach(node => this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(node))));
-                })
+                this.subscribeToNodeRegistrationEvent();
+                this.subscribeToNodeDeletionEvent();
+                this.subscribeToPeerConnectEvent();
             });
         } else {
             await this.registerSelf(ipAddress);
         }
+    }
+
+    private subscribeToNodeRegistrationEvent(): void {
+        this.libp2pNode.pubsub.subscribe("node_registration", (message: any) => {
+            this.log.debug("New node registered");
+            const node: NodeResponse = JSON.parse(message.data.toString());
+            this.registeredNodes.push(node);
+            this.registeredNodes = uniqBy(this.registeredNodes, "id");
+        });
+    }
+
+    private subscribeToNodeDeletionEvent(): void {
+        this.libp2pNode.pubsub.subscribe("node_deletion", (message: any) => {
+            this.log.debug("Node unregistered");
+            const nodeUnregisteredMessage: {nodeId: string} = JSON.parse(message.data.toString());
+            this.log.debug(`Removing node with ID ${nodeUnregisteredMessage.nodeId}`);
+            this.registeredNodes = this.registeredNodes.filter(node => node.id !== nodeUnregisteredMessage.nodeId);
+        })
+    }
+
+    private subscribeToPeerConnectEvent(): void {
+        this.libp2pNode.on("peer:connect", (peer: any) => {
+            this.log.debug(`Connected to peer ${peer.id.toB58String()}`);
+            this.registeredNodes.forEach(node => this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(node))));
+        });
     }
 
     private async registerSelf(ipAddress: string): Promise<void> {

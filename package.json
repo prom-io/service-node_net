@@ -41,6 +41,7 @@
     "lodash.uniqby": "^4.7.0",
     "nedb": "^1.8.0",
     "nest-logger": "^4.0.1",
+    "nest-schedule": "^0.6.4",
     "optional-typescript": "^1.3.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",

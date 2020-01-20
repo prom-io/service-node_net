@@ -7,6 +7,7 @@ import {FileModule} from "./file";
 import {TransactionModule} from "./transaction";
 import {PurchaseModule} from "./purchase";
 import {DiscoveryModule} from "./discovery";
+import {StatusCheckModule} from "./status-check";
 
 @Module({
     imports: [
@@ -17,7 +18,8 @@ import {DiscoveryModule} from "./discovery";
         FileModule,
         TransactionModule,
         PurchaseModule,
-        DiscoveryModule
+        DiscoveryModule,
+        StatusCheckModule
     ]
 })
 export class AppModule {}
