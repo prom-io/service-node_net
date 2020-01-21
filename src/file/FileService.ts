@@ -4,6 +4,7 @@ import fileSystem from "fs";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import {LoggerService} from "nest-logger";
+import {FileUploadingStage} from "./types";
 import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto} from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {LocalFileRecord} from "./LocalFileRecord";
@@ -25,7 +26,6 @@ import {UploadFileRequest} from "../dds-api/types/request";
 import {DdsApiResponse} from "../dds-api/types/response";
 import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
-import {FileUploadingStage} from "./types";
 
 @Injectable()
 export class FileService {
