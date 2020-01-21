@@ -45,7 +45,8 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
                     await Axios.get(`http://${node.ipAddress}:${node.port}/api/v1/status`)
                 } catch (error) {
                     this.log.info(`Node with IP ${node.ipAddress} and id ${node.id} seems to be down, removing it`);
-                    this.registeredNodes = this.registeredNodes.filter(registeredNode => registeredNode.id !== node.id);
+                    this.registeredNodes = this.registeredNodes
+                        .filter(registeredNode => registeredNode.ipAddress !== node.ipAddress && registeredNode.port !== node.port);
                     this.libp2pNode.pubsub.publish("node_deletion", Buffer.from(JSON.stringify({nodeId: node.id})));
                 }
             }
