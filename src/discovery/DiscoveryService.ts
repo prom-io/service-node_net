@@ -7,7 +7,7 @@ import {
     OnApplicationShutdown
 } from "@nestjs/common";
 import {LoggerService} from "nest-logger";
-import {Cron} from "nest-schedule";
+import {Cron, NestSchedule} from "nest-schedule";
 import Axios from "axios";
 import uuid from "uuid/v4";
 import uniqBy from "lodash.uniqby";
@@ -20,7 +20,7 @@ import {getRandomElement} from "../utils/random-element";
 import {config} from "../config";
 
 @Injectable()
-export class DiscoveryService implements OnApplicationBootstrap, OnApplicationShutdown {
+export class DiscoveryService extends NestSchedule implements OnApplicationBootstrap, OnApplicationShutdown {
     private bootstrapNodeStarted: boolean = false;
     private registeredNodes: NodeResponse[] = [];
     private nodeId?: string = undefined;
@@ -28,13 +28,14 @@ export class DiscoveryService implements OnApplicationBootstrap, OnApplicationSh
     constructor(@Inject("libp2pNode") private readonly libp2pNode: any | null,
                 private readonly defaultBootstrapNodesContainer: DefaultBootstrapNodesContainer,
                 private readonly log: LoggerService) {
+        super()
     }
 
     public getNodes(): NodeResponse[] {
         return this.registeredNodes;
     }
 
-    @Cron("*/10 * * * *", {
+    @Cron("* * * * *", {
         waiting: true
     })
     public async checkNodesStatus(): Promise<void> {

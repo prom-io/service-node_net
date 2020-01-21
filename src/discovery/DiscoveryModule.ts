@@ -1,4 +1,5 @@
 import {Module} from "@nestjs/common";
+import {ScheduleModule} from "nest-schedule";
 import TCP from "libp2p-tcp";
 import Mplex from "libp2p-mplex";
 import Secio from "libp2p-secio";
@@ -63,6 +64,7 @@ import {config} from "../config";
             },
             inject: [DefaultBootstrapNodesContainer]
         }
-    ]
+    ],
+    imports: [ScheduleModule.register()]
 })
 export class DiscoveryModule {}
