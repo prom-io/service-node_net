@@ -32,7 +32,6 @@
     "date-fns": "^2.9.0",
     "dotenv": "^8.2.0",
     "env-decorator": "^1.0.0",
-    "it-pipe": "^1.1.0",
     "libp2p": "^0.26.2",
     "libp2p-bootstrap": "^0.10.3",
     "libp2p-gossipsub": "^0.0.5",

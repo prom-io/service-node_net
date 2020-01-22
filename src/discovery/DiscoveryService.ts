@@ -11,7 +11,6 @@ import {Cron, NestSchedule} from "nest-schedule";
 import Axios from "axios";
 import uuid from "uuid/v4";
 import uniqBy from "lodash.uniqby";
-import pipe from "it-pipe";
 import pull from "pull-stream";
 import {BootstrapNodesContainer} from "./BootstrapNodesContainer";
 import {NodeType} from "./types";
@@ -52,12 +51,12 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
                 } catch (error) {
                     this.log.info(`Node with IP ${node.ipAddress}, port ${node.port} and id ${node.id} seems to be down`);
                     nodeIdsToRemove.push(node.id);
-                    this.libp2pNode.pubsub.publish("node_deletion", Buffer.from(JSON.stringify({nodeId: node.id})));
                 }
             }
             if (nodeIdsToRemove.length !== 0) {
                 this.log.info(`Removing nodes with IDs ${JSON.stringify(nodeIdsToRemove)}`);
                 this.registeredNodes = this.registeredNodes.filter(node => !nodeIdsToRemove.includes(node.id));
+                nodeIdsToRemove.forEach(nodeId => this.libp2pNode.pubsub.publish("node_deletion", Buffer.from(JSON.stringify({nodeId}))));
             }
         }
     }
@@ -91,7 +90,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
             this.log.info("Started bootstrap node");
             this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
             this.subscribeToNodeRegistrationEvent();
-            // this.subscribeToNodeDeletionEvent();
+            this.subscribeToNodeDeletionEvent();
             this.subscribeToPeerConnectEvent();
             await this.registerSelf(ipAddress);
         } else {
