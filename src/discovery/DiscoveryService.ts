@@ -67,7 +67,6 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         }
 
         const id = uuid();
-        this.nodeId = id;
         const nodeResponse: NodeResponse = {
             id,
             addresses: registerNodeRequest.walletAddresses,
@@ -82,10 +81,13 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     }
 
     public async onApplicationBootstrap(): Promise<any> {
-        const ipAddress = await getIpAddress(config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION);
+        const listeningAddress = await getIpAddress();
+        const ipAddress = await getIpAddress({
+          useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
+        });
         if (this.libp2pNode !== null) {
             this.log.info("Starting as bootstrap node");
-            this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/${ipAddress}/tcp/${config.BOOTSTRAP_NODE_PORT}`);
+            this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/${listeningAddress}/tcp/${config.BOOTSTRAP_NODE_PORT}`);
             this.handleInitialNodeListRetrieval();
             await this.libp2pNode.start();
             this.bootstrapNodeStarted = true;
@@ -102,7 +104,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     }
 
     private handleInitialNodeListRetrieval() {
-        this.libp2pNode.handle("/node_list_retrieval/1.0.0", (protocol, connection) => {
+        this.libp2pNode.handle("/node_list_retrieval/1.0.0", (protocol: any, connection: any) => {
             this.log.debug("Received list of nodes");
             pull(
                 connection,
@@ -156,13 +158,15 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     private async registerSelf(ipAddress: string): Promise<void> {
         const walletAddresses = (await this.accountService.getAllLocalAccounts()).map(account => account.address);
         if (config.IS_BOOTSTRAP_NODE) {
+            const id = uuid();
+            this.nodeId = id;
             const registerNodeRequest: RegisterNodeRequest = {
                 bootstrap: true,
                 ipAddress,
                 port: config.SERVICE_NODE_API_PORT,
                 type: NodeType.SERVICE_NODE,
                 walletAddresses,
-                id: uuid()
+                id
             };
             this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(registerNodeRequest)));
         } else {
