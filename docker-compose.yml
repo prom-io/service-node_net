@@ -1,20 +1,11 @@
 version: "3"
 services:
-  bootnode:
-    build:
-      context: ./bootnode
-  vm2:
+  service_node:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - SERVICE_NODE_API_PORT=${SERVICE_NODE_API_PORT}
-        - GETH_RPC_PORT=${GETH_RPC_PORT}
     volumes:
-      - ./:/usr/src/app
+    - ./:/usr/src/app
     ports:
-      - ${SERVICE_NODE_API_PORT}:${SERVICE_NODE_API_PORT}
-      - ${GETH_RPC_PORT}:${GETH_RPC_PORT}
-    depends_on:
-      - bootnode
-    tty: true
+    - ${SERVICE_NODE_API_PORT}:${SERVICE_NODE_API_PORT}
+    - ${BOOTSTRAP_NODE_PORT}:${BOOTSTRAP_NODE_PORT}
