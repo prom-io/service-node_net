@@ -5,5 +5,6 @@ export interface RegisterNodeRequest {
     port: number,
     walletAddresses: string[],
     type: NodeType,
-    bootstrap: boolean
+    bootstrap: boolean,
+    id?: string
 }

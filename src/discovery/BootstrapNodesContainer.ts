@@ -5,7 +5,7 @@ import {BootstrapNode} from "./types";
 const bootstrapNodes: {bootstrapNodes: BootstrapNode[]} = require("../../bootstrap-nodes.json");
 
 @Injectable()
-export class DefaultBootstrapNodesContainer implements OnModuleInit {
+export class BootstrapNodesContainer implements OnModuleInit {
     private bootstrapNodes: BootstrapNode[] = [];
 
     public onModuleInit(): void {

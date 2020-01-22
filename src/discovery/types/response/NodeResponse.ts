@@ -5,5 +5,6 @@ export interface NodeResponse {
     ipAddress: string,
     port: number,
     type: NodeType,
-    addresses: string[]
+    addresses: string[],
+    bootstrap: boolean
 }
