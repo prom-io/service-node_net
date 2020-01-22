@@ -4,6 +4,11 @@
       "ipAddress": "127.0.0.1",
       "port": 2000,
       "libp2pAddress": "/ip4/127.0.0.1/tcp/12345/p2p/QmWb6gEfR8mPGy1ZNQxUCyJrEoMsVf4TJFME882thYFVcd"
+    },
+    {
+      "ipAddress": "127.0.0.1",
+      "port": 2001,
+      "libp2pAddress": "/ip4/127.0.0.1/tcp/12346/p2p/QmfJYPr2EpZydeBL2vp4iq76ZcrgdfY2PEZFfgq3K4ZmHz"
     }
   ]
 }

@@ -1,5 +1,7 @@
 import {Injectable, OnModuleInit} from "@nestjs/common";
+import {LoggerService} from "nest-logger";
 import {BootstrapNode} from "./types";
+import {config} from "../config";
 
 // tslint:disable-next-line:no-var-requires
 const bootstrapNodes: {bootstrapNodes: BootstrapNode[]} = require("../../bootstrap-nodes.json");
@@ -8,8 +10,16 @@ const bootstrapNodes: {bootstrapNodes: BootstrapNode[]} = require("../../bootstr
 export class BootstrapNodesContainer implements OnModuleInit {
     private bootstrapNodes: BootstrapNode[] = [];
 
+    constructor(private readonly log: LoggerService) {
+    }
+
     public onModuleInit(): void {
-        console.log(bootstrapNodes);
+        this.log.debug("Starting with the following bootstrap nodes:")
+
+        if (config.LOGGING_LEVEL.trim().toUpperCase() === "DEBUG") {
+            console.log(bootstrapNodes);
+        }
+
         this.bootstrapNodes = bootstrapNodes.bootstrapNodes;
     }
 

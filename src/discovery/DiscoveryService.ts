@@ -66,8 +66,10 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
             throw new HttpException("Registration can only be done through bootstrap node, and this is not one of them", HttpStatus.FORBIDDEN);
         }
 
+        const id = uuid();
+        this.nodeId = id;
         const nodeResponse: NodeResponse = {
-            id: uuid(),
+            id,
             addresses: registerNodeRequest.walletAddresses,
             ipAddress: registerNodeRequest.ipAddress,
             port: registerNodeRequest.port,
@@ -187,6 +189,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
 
     public async onApplicationShutdown(signal?: string): Promise<any> {
         if (this.libp2pNode !== null) {
+            this.log.info("Deleting itself from list of nodes and stopping libp2pNode");
             this.libp2pNode.pubsub.publish("node_deletion", Buffer.from(JSON.stringify({nodeId: this.nodeId})));
             await this.libp2pNode.stop();
         }
