@@ -95,7 +95,9 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     }
 
     public async onApplicationBootstrap(): Promise<any> {
-        const listeningAddress = await getIpAddress();
+        const listeningAddress = await getIpAddress({
+            useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
+        });
         const ipAddress = await getIpAddress({
           useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
         });
