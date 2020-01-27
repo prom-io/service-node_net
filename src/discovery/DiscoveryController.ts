@@ -19,7 +19,7 @@ export class DiscoveryController {
                 return this.discoveryService.getNodesByAddress(address);
             }
         } else if (type) {
-            return t
+            return this.discoveryService.getNodesByType(getNodeTypeFromString(type));
         }
 
         return this.discoveryService.getNodes();
