@@ -95,12 +95,10 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     }
 
     public async onApplicationBootstrap(): Promise<any> {
-        const listeningAddress = await getIpAddress({
-            useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
-        });
         const ipAddress = await getIpAddress({
           useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
         });
+        const listeningAddress = await getIpAddress();
         if (this.libp2pNode !== null) {
             this.log.info("Starting as bootstrap node");
             this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/${listeningAddress}/tcp/${config.BOOTSTRAP_NODE_PORT}`);
