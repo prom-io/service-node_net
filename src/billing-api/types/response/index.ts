@@ -6,3 +6,7 @@ export * from "./PaginatedResponse";
 export * from "./PayForDataUploadResponse";
 export * from "./BillingTransactionResponse";
 export * from "./TransactionType";
+export * from "./BillingAccountRegistrationStatusResponse";
+export * from "./BillingAccountRole";
+export * from "./GenericBillingApiResponse";
+export * from "./GetBillingAccountRoleResponse";

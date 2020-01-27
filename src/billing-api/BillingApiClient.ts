@@ -9,12 +9,13 @@ import {
 } from "./types/request";
 import {
     BalanceResponse,
+    BillingAccountRegistrationStatusResponse,
     BillingFileResponse,
+    BillingTransactionResponse,
     DataOwnersResponse,
-    GenericBillingApiResponse,
+    GenericBillingApiResponse, GetBillingAccountRoleResponse,
     PaginatedResponse,
     PayForDataUploadResponse,
-    BillingTransactionResponse,
     TransactionType
 } from "./types/response";
 
@@ -77,5 +78,13 @@ export class BillingApiClient {
         pageSize: number
     ): AxiosPromise<PaginatedResponse<BillingTransactionResponse>> {
         return this.axios.get(`/transaction/address/${address}/type/${type}/paginate/${page}/${pageSize}`);
+    }
+
+    public isAccountRegistered(address: string): AxiosPromise<BillingAccountRegistrationStatusResponse> {
+        return this.axios.get(`/account/check/registered/${address}`);
+    }
+
+    public getAccountRole(address: string): AxiosPromise<GetBillingAccountRoleResponse> {
+        return this.axios.get(`/account/address/role/${address}`);
     }
 }

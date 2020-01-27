@@ -1,7 +1,13 @@
 import {Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post} from "@nestjs/common";
 import {AccountService} from "./AccountService";
 import {RegisterAccountDto} from "./types/request";
-import {BalanceOfAccountResponse, BalancesOfLocalAccountsResponse, DataOwnersOfDataValidatorResponse, LocalAccountResponse} from "./types/response";
+import {
+    AccountRegistrationStatusResponse,
+    BalanceOfAccountResponse,
+    BalancesOfLocalAccountsResponse,
+    DataOwnersOfDataValidatorResponse,
+    LocalAccountResponse
+} from "./types/response";
 
 @Controller("api/v1/accounts")
 export class AccountController {
@@ -27,6 +33,11 @@ export class AccountController {
     @Get(":address/balance")
     public getBalanceOfAccount(@Param("address") address: string): Promise<BalanceOfAccountResponse> {
         return this.accountService.getBalanceOfAccount(address);
+    }
+
+    @Get(":address/is-registered")
+    public isAccountRegistered(@Param("address") address: string): Promise<AccountRegistrationStatusResponse> {
+        return this.accountService.isAccountRegistered(address);
     }
 
     @Get("balances")

@@ -1,6 +1,7 @@
 import {Global, Module} from "@nestjs/common";
 import {LoggerService, LoggerTransport} from "nest-logger";
 import {config} from "../config";
+import {AxiosErrorLogger} from "./AxiosErrorLogger";
 
 @Global()
 @Module({
@@ -21,8 +22,9 @@ import {config} from "../config";
                     loggers
                 )
             }
-        }
+        },
+        AxiosErrorLogger
     ],
-    exports: [LoggerService]
+    exports: [LoggerService, AxiosErrorLogger]
 })
 export class LoggerModule {}

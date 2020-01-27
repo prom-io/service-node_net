@@ -5,14 +5,23 @@ import {RegisterAccountDto} from "./types/request";
 import {BillingApiClient} from "../billing-api";
 import {AccountRepository} from "./AccountRepository";
 import {EntityType} from "../nedb/entity";
-import {BalanceOfAccountResponse, BalancesOfLocalAccountsResponse, DataOwnersOfDataValidatorResponse, LocalAccountResponse} from "./types/response";
+import {
+    AccountRegistrationStatusResponse, AccountRole,
+    BalanceOfAccountResponse,
+    BalancesOfLocalAccountsResponse,
+    DataOwnersOfDataValidatorResponse,
+    LocalAccountResponse
+} from "./types/response";
+import {AxiosErrorLogger} from "../logging";
+import {billingAccountRoleToAccountRole} from "./mappers";
 
 @Injectable()
 export class AccountService {
     constructor(
         private readonly accountRepository: AccountRepository,
         private readonly billingApiClient: BillingApiClient,
-        private readonly log: LoggerService
+        private readonly log: LoggerService,
+        private readonly axiosErrorLogger: AxiosErrorLogger
     ) {
     }
 
@@ -96,6 +105,7 @@ export class AccountService {
             }
 
             this.log.error(message);
+            this.axiosErrorLogger.logAxiosError(error);
 
             throw new HttpException(message, responseStatus);
         }
@@ -112,10 +122,47 @@ export class AccountService {
 
             if (error.response) {
                 message = `Billing API responded with ${error.response.status} status when tried to get data owners of data validator`;
-                console.log(error);
             }
 
             this.log.error(message);
+            this.axiosErrorLogger.logAxiosError(error);
+
+            throw new HttpException(message, responseStatus);
+        }
+    }
+
+    public async isAccountRegistered(address: string): Promise<AccountRegistrationStatusResponse> {
+        try {
+            const registrationStatusResponse = (await this.billingApiClient.isAccountRegistered(address)).data;
+            let role: AccountRole | undefined;
+
+            if (registrationStatusResponse.is_registered) {
+                const accountRoleResponse = (await this.billingApiClient.getAccountRole(address)).data;
+                role = billingAccountRoleToAccountRole(accountRoleResponse.role);
+            }
+
+            return {
+                registered: registrationStatusResponse.is_registered,
+                role
+            };
+        } catch (error) {
+            let message = "Unknown error occurred when tried to check account registration status";
+            const responseStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
+            if (error.response) {
+                if (error.config) {
+                    error = error as AxiosError;
+
+                    if (error.response) {
+                        message = `Billing API responded with ${error.response.status} status`;
+                    } else {
+                        message = "Billing API is unreachable";
+                    }
+                }
+            }
+
+            this.log.error(message);
+            this.axiosErrorLogger.logAxiosError(error);
 
             throw new HttpException(message, responseStatus);
         }
@@ -143,15 +190,15 @@ export class AccountService {
                         responseStatus = HttpStatus.CONFLICT;
                     } else {
                         message = `Billing API responded with ${error.response.status}`;
-                        this.log.error(message);
                     }
                 } else {
                     message = "Billing API is unreachable";
-                    this.log.error(message);
                 }
             }
 
-            console.log(error);
+            this.log.error(message);
+            this.axiosErrorLogger.logAxiosError(error);
+
             throw new HttpException(message, responseStatus);
         }
     }

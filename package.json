@@ -28,6 +28,7 @@
     "@types/pull-stream": "^3.6.0",
     "@types/uuid": "^3.4.6",
     "axios": "^0.19.1",
+    "class-transformer": "^0.2.3",
     "class-validator": "^0.11.0",
     "date-fns": "^2.9.0",
     "dotenv": "^8.2.0",
