@@ -1,30 +1,12 @@
-FROM node:12 as builder
+FROM node:12
 
-ENV NODE_ENV build
-WORKDIR /home/node
+WORKDIR /app
 
-COPY src .
-COPY package.json .
-COPY bootstrap-nodes.json .
-COPY yarn.lock .
-COPY nest-cli.json .
-COPY tsconfig.json .
-COPY tsconfig.build.json .
-COPY tslint.json .
-COPY .env .
+COPY . .
 
 RUN yarn global add @nestjs/cli
 RUN yarn install
-
-FROM node:12
-
-ENV NODE_ENV production
-WORKDIR /homde/node
-
-COPY --from=builder /home/node/package*.json /home/node/
-COPY --from=builder /home/node/dist/ /home/node/dist/
-
-RUN yarn install
+RUN yarn build
 
 EXPOSE $SERVICE_NODE_API_PORT
 EXPOSE $BOOTSTRAP_NODE_PORT
