@@ -61,6 +61,20 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         }
     }
 
+    public async getNodesByAddress(address: string): Promise<NodeResponse[]> {
+        return this.registeredNodes.filter(node => node.addresses.includes(address))
+    }
+
+    public async getNodesByType(type: NodeType): Promise<NodeResponse[]> {
+        return this.registeredNodes.filter(node => node.type === type);
+    }
+
+    public async getNodesByAddressAndType(address: string, type: NodeType): Promise<NodeResponse[]> {
+        return this.registeredNodes
+            .filter(node => node.type === type)
+            .filter(node => node.addresses.includes(address));
+    }
+
     public async registerNode(registerNodeRequest: RegisterNodeRequest): Promise<NodeResponse> {
         if (!config.IS_BOOTSTRAP_NODE) {
             throw new HttpException("Registration can only be done through bootstrap node, and this is not one of them", HttpStatus.FORBIDDEN);
@@ -145,7 +159,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     private subscribeToPeerConnectEvent(): void {
         this.libp2pNode.on("peer:connect", async (peer: any) => {
             this.log.debug(`Connected to peer ${peer.id.toB58String()}`);
-            this.libp2pNode.dialProtocol(peer, "/node_list_retrieval/1.0.0", (error, connection) => {
+            this.libp2pNode.dialProtocol(peer, "/node_list_retrieval/1.0.0", (error: any, connection: any) => {
                 this.log.debug(`Dialing node ${peer.id.toB58String()} and sending it list of nodes`);
                 pull(
                     pull.values(this.registeredNodes.map(node => JSON.stringify(node))),
@@ -160,15 +174,15 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         if (config.IS_BOOTSTRAP_NODE) {
             const id = uuid();
             this.nodeId = id;
-            const registerNodeRequest: RegisterNodeRequest = {
+            const nodeRegisteredEvent: NodeResponse = {
                 bootstrap: true,
                 ipAddress,
                 port: config.SERVICE_NODE_API_PORT,
                 type: NodeType.SERVICE_NODE,
-                walletAddresses,
+                addresses: walletAddresses,
                 id
             };
-            this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(registerNodeRequest)));
+            this.libp2pNode.pubsub.publish("node_registration", Buffer.from(JSON.stringify(nodeRegisteredEvent)));
         } else {
             const bootstrapNode = getRandomElement(this.bootstrapNodesContainer.getBootstrapNodes());
             this.log.info(`Chosen bootstrap node is ${bootstrapNode.libp2pAddress}`);

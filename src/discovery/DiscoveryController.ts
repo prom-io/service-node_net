@@ -1,5 +1,6 @@
-import {Body, Controller, Get, Post} from "@nestjs/common";
+import {Body, Controller, Get, Post, Query} from "@nestjs/common";
 import {DiscoveryService} from "./DiscoveryService";
+import {getNodeTypeFromString} from "./types";
 import {NodeResponse} from "./types/response";
 import {RegisterNodeRequest} from "./types/request";
 
@@ -9,7 +10,18 @@ export class DiscoveryController {
     }
 
     @Get("nodes")
-    public getNodes(): NodeResponse[] {
+    public async getNodes(@Query("address") address?: string,
+                          @Query("type") type?: string): Promise<NodeResponse[]> {
+        if (address) {
+            if (type) {
+                return this.discoveryService.getNodesByAddressAndType(address, getNodeTypeFromString(type));
+            } else {
+                return this.discoveryService.getNodesByAddress(address);
+            }
+        } else if (type) {
+            return t
+        }
+
         return this.discoveryService.getNodes();
     }
 
