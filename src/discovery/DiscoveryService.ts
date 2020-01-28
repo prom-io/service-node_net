@@ -42,7 +42,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         waiting: true
     })
     public async checkNodesStatus(): Promise<void> {
-        if (config.IS_BOOTSTRAP_NODE) {
+        if (config.IS_BOOTSTRAP_NODE && this.bootstrapNodeStarted) {
             this.log.info("Checking status of registered nodes");
             const nodeIdsToRemove: string[] = [];
             for (const node of this.registeredNodes) {
@@ -98,18 +98,20 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         const ipAddress = await getIpAddress({
           useLocalIpAddress: config.USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION
         });
-        const listeningAddress = await getIpAddress();
         if (this.libp2pNode !== null) {
             this.log.info("Starting as bootstrap node");
-            this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/${listeningAddress}/tcp/${config.BOOTSTRAP_NODE_PORT}`);
+            this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/0.0.0.0/tcp/${config.BOOTSTRAP_NODE_PORT}`);
             this.handleInitialNodeListRetrieval();
+            this.subscribeToPeerConnectEvent();
             await this.libp2pNode.start();
-            this.bootstrapNodeStarted = true;
-            this.log.info("Started bootstrap node");
-            this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
             this.subscribeToNodeRegistrationEvent();
             this.subscribeToNodeDeletionEvent();
-            this.subscribeToPeerConnectEvent();
+            this.bootstrapNodeStarted = true;
+            this.libp2pNode.peerInfo.multiaddrs._multiaddrs.forEach(address => {
+                console.log(address.toString());
+            });
+            this.log.info("Started bootstrap node");
+            this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
             await this.registerSelf(ipAddress);
         } else {
             this.log.info("Starting not as bootstrap node");

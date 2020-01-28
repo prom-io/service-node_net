@@ -29,7 +29,7 @@ import {AccountModule} from "../account";
                         ?
                         {
                             bootstrap: {
-                                interval: 60e3,
+                                interval: 500,
                                 enabled: true,
                                 list: defaultBootstrapNodesContainer.getBootstrapNodesLibp2pAddresses()
                             }

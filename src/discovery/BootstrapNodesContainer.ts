@@ -8,7 +8,7 @@ const bootstrapNodes: {bootstrapNodes: BootstrapNode[]} = require("../../bootstr
 
 @Injectable()
 export class BootstrapNodesContainer implements OnModuleInit {
-    private bootstrapNodes: BootstrapNode[] = require("../../bootstrap-nodes.json").bootstrapNodes;
+    private bootstrapNodes: BootstrapNode[] = [];
 
     constructor(private readonly log: LoggerService) {
     }
@@ -17,8 +17,10 @@ export class BootstrapNodesContainer implements OnModuleInit {
         this.log.debug("Starting with the following bootstrap nodes:");
 
         if (config.LOGGING_LEVEL.trim().toUpperCase() === "DEBUG") {
-            console.log(bootstrapNodes);
+            console.log(this.bootstrapNodes);
         }
+
+        this.bootstrapNodes = bootstrapNodes.bootstrapNodes;
     }
 
     public getBootstrapNodes(): BootstrapNode[] {
