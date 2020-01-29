@@ -1,14 +1,14 @@
 {
   "bootstrapNodes": [
     {
-      "ipAddress": "192.168.0.175",
+      "ipAddress": "188.166.37.102",
       "port": 2000,
-      "libp2pAddress": "/ip4/192.168.0.175/tcp/12345/p2p/QmXaimZPVfmrh1KoYy7eKzkqzybatMkiKiK3RCKGTTPa8A"
+      "libp2pAddress": "/ip4/188.166.37.102/tcp/12345/p2p/QmekndSMXKCGLFXp4peHpf9ynLWno6QFbo1uqMq8HBPqtz"
     },
     {
-      "ipAddress": "192.168.0.175",
-      "port": 2001,
-      "libp2pAddress": "/ip4/192.168.0.175/tcp/12346/p2p/QmRhDCSb2kMoa6RBdg2PRpzwbQZGRnwGWcuTrZfyF4QxtR"
+      "ipAddress": "134.209.95.239",
+      "port": 2000,
+      "libp2pAddress": "/ip4/134.209.95.239/tcp/12346/p2p/QmaF43H5yth1nGWBF4xYEkqaL7X4uUsGNr3vhFbsAWnje6"
     }
   ]
 }

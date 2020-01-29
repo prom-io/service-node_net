@@ -1,11 +1,14 @@
 import {Module} from "@nestjs/common";
 import {ScheduleModule} from "nest-schedule";
 import TCP from "libp2p-tcp";
+import crypto from "libp2p-crypto";
 import Mplex from "libp2p-mplex";
 import Secio from "libp2p-secio";
 import Bootstrap from "libp2p-bootstrap";
 import Gossipsub from "libp2p-gossipsub";
 import {create} from "libp2p";
+import PeerId from "peer-id";
+import PeerInfo from "peer-info";
 import {BootstrapNodesContainer} from "./BootstrapNodesContainer";
 import {DiscoveryController} from "./DiscoveryController";
 import {DiscoveryService} from "./DiscoveryService";
@@ -23,6 +26,17 @@ import {AccountModule} from "../account";
                 if (config.IS_BOOTSTRAP_NODE) {
                     const bootstrapNodesAvailable = defaultBootstrapNodesContainer.getBootstrapNodes()
                         && defaultBootstrapNodesContainer.getBootstrapNodesLibp2pAddresses().length;
+                    let peerInfo: object | undefined;
+
+                    if (config.BOOTSTRAP_NODE_PRIVATE_KEY && config.BOOTSTRAP_NODE_PUBLIC_KEY && config.BOOTSTRAP_NODE_PEER_ID) {
+                        const peerId = await PeerId.createFromJSON({
+                            id: config.BOOTSTRAP_NODE_PEER_ID.trim(),
+                            pubKey: config.BOOTSTRAP_NODE_PUBLIC_KEY.trim(),
+                            privKey: config.BOOTSTRAP_NODE_PRIVATE_KEY.trim()
+                        });
+                        peerInfo = new PeerInfo(peerId);
+                    }
+
                     const peerDiscoveryConfig = bootstrapNodesAvailable
                         ? {
                             enabled: true,
@@ -39,6 +53,7 @@ import {AccountModule} from "../account";
                         };
 
                     const libp2pOptions = {
+                        peerInfo,
                         modules: {
                             transport: [TCP],
                             streamMuxer: [Mplex],

@@ -110,7 +110,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
             this.bootstrapNodeStarted = true;
             console.log(this.libp2pNode.peerInfo.multiaddrs.toArray().map((multiaddress: any) => `${multiaddress}/p2p/${this.libp2pNode.peerInfo.id.toB58String()}`));
             this.log.info("Started bootstrap node");
-            this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
+            this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id.toB58String()}`);
             await this.registerSelf(ipAddress);
         } else {
             this.log.info("Starting not as bootstrap node");

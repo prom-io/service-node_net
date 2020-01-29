@@ -36,6 +36,15 @@ export class EnvConfig {
     @Env({type: "number"})
     BOOTSTRAP_NODE_PORT = 12345;
 
+    @Env({type: "string"})
+    BOOTSTRAP_NODE_PEER_ID: string | undefined = undefined;
+
+    @Env({type: "string"})
+    BOOTSTRAP_NODE_PRIVATE_KEY: string | undefined = undefined;
+
+    @Env({type: "string"})
+    BOOTSTRAP_NODE_PUBLIC_KEY: string | undefined = undefined;
+
     @Env({type: "boolean"})
     USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION = false;
 
