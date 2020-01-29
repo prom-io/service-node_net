@@ -11,7 +11,8 @@ import {Cron, NestSchedule} from "nest-schedule";
 import Axios from "axios";
 import uuid from "uuid/v4";
 import uniqBy from "lodash.uniqby";
-import pull from "pull-stream";
+import pipe from "it-pipe";
+import multiaddr from "multiaddr";
 import {BootstrapNodesContainer} from "./BootstrapNodesContainer";
 import {NodeType} from "./types";
 import {RegisterNodeRequest} from "./types/request";
@@ -31,7 +32,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
                 private readonly bootstrapNodesContainer: BootstrapNodesContainer,
                 private readonly accountService: AccountService,
                 private readonly log: LoggerService) {
-        super()
+        super();
     }
 
     public getNodes(): NodeResponse[] {
@@ -100,16 +101,14 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         });
         if (this.libp2pNode !== null) {
             this.log.info("Starting as bootstrap node");
-            this.libp2pNode.peerInfo.multiaddrs.add(`/ip4/0.0.0.0/tcp/${config.BOOTSTRAP_NODE_PORT}`);
-            this.handleInitialNodeListRetrieval();
+            this.libp2pNode.peerInfo.multiaddrs.add(multiaddr(`/ip4/0.0.0.0/tcp/${config.BOOTSTRAP_NODE_PORT}`));
             this.subscribeToPeerConnectEvent();
             await this.libp2pNode.start();
+            await this.handleInitialNodeListRetrieval();
             this.subscribeToNodeRegistrationEvent();
             this.subscribeToNodeDeletionEvent();
             this.bootstrapNodeStarted = true;
-            this.libp2pNode.peerInfo.multiaddrs._multiaddrs.forEach(address => {
-                console.log(address.toString());
-            });
+            console.log(this.libp2pNode.peerInfo.multiaddrs.toArray().map((multiaddress: any) => `${multiaddress}/p2p/${this.libp2pNode.peerInfo.id.toB58String()}`));
             this.log.info("Started bootstrap node");
             this.log.info(`Peer ID is ${this.libp2pNode.peerInfo.id._idB58String}`);
             await this.registerSelf(ipAddress);
@@ -119,22 +118,30 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
         }
     }
 
-    private handleInitialNodeListRetrieval() {
-        this.libp2pNode.handle("/node_list_retrieval/1.0.0", (protocol: any, connection: any) => {
+    private async handleInitialNodeListRetrieval(): Promise<void> {
+        this.libp2pNode.handle("/node_list_retrieval/1.0.0", async (connection: any) => {
+            const {stream} = connection;
+
+            const nodesJson: string[] = await pipe(
+                stream,
+                async (source: any): Promise<string[]> => {
+                    const result: string[] = [];
+                    for await (const data of source) {
+                        result.push(data.toString());
+                    }
+                    return result;
+                }
+            );
+
             this.log.debug("Received list of nodes");
-            pull(
-                connection,
-                pull.map((data: Buffer) => data.toString()),
-                pull.collect((error, array: string[]) => {
-                    let nodes: NodeResponse[] = array.map(nodeJson => JSON.parse(nodeJson));
-                    nodes = [
-                        ...this.registeredNodes,
-                        ...nodes
-                    ];
-                    nodes = uniqBy(nodes, "id");
-                    this.registeredNodes = nodes;
-                })
-            )
+            nodesJson.forEach(nodeJson => this.log.debug(nodeJson));
+
+            let nodeList: NodeResponse[] = nodesJson.map(nodeJson => JSON.parse(nodeJson));
+            nodeList = [
+                ...this.registeredNodes,
+                ...nodeList
+            ];
+            this.registeredNodes = nodeList;
         })
     }
 
@@ -161,13 +168,12 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     private subscribeToPeerConnectEvent(): void {
         this.libp2pNode.on("peer:connect", async (peer: any) => {
             this.log.debug(`Connected to peer ${peer.id.toB58String()}`);
-            this.libp2pNode.dialProtocol(peer, "/node_list_retrieval/1.0.0", (error: any, connection: any) => {
-                this.log.debug(`Dialing node ${peer.id.toB58String()} and sending it list of nodes`);
-                pull(
-                    pull.values(this.registeredNodes.map(node => JSON.stringify(node))),
-                    connection
-                );
-            })
+            const {stream} = await this.libp2pNode.dialProtocol(peer, "/node_list_retrieval/1.0.0");
+            this.log.debug(`Dialing node ${peer.id.toB58String()} and sending it list of nodes`);
+            pipe(
+                this.registeredNodes.map(node => JSON.stringify(node)),
+                stream.sink
+            );
         });
     }
 

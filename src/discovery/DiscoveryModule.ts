@@ -4,9 +4,8 @@ import TCP from "libp2p-tcp";
 import Mplex from "libp2p-mplex";
 import Secio from "libp2p-secio";
 import Bootstrap from "libp2p-bootstrap";
-import MulticastDNS from "libp2p-mdns";
 import Gossipsub from "libp2p-gossipsub";
-import {createLibp2p} from "libp2p";
+import {create} from "libp2p";
 import {BootstrapNodesContainer} from "./BootstrapNodesContainer";
 import {DiscoveryController} from "./DiscoveryController";
 import {DiscoveryService} from "./DiscoveryService";
@@ -20,45 +19,40 @@ import {AccountModule} from "../account";
         DiscoveryService,
         {
             provide: "libp2pNode",
-            useFactory: (defaultBootstrapNodesContainer: BootstrapNodesContainer) => {
+            useFactory: async (defaultBootstrapNodesContainer: BootstrapNodesContainer) => {
                 if (config.IS_BOOTSTRAP_NODE) {
                     const bootstrapNodesAvailable = defaultBootstrapNodesContainer.getBootstrapNodes()
                         && defaultBootstrapNodesContainer.getBootstrapNodesLibp2pAddresses().length;
-                    const peerDiscoveryMechanism = bootstrapNodesAvailable ? Bootstrap : MulticastDNS;
                     const peerDiscoveryConfig = bootstrapNodesAvailable
-                        ?
-                        {
+                        ? {
+                            enabled: true,
+                            autoDial: true,
                             bootstrap: {
-                                interval: 500,
+                                interval: 5000,
                                 enabled: true,
                                 list: defaultBootstrapNodesContainer.getBootstrapNodesLibp2pAddresses()
                             }
                         }
-                        :
-                        {
-                            mdns: {
-                                interval: 20e3,
-                                enabled: true
-                            }
+                        : {
+                            enabled: true,
+                            autoDial: true
                         };
 
                     const libp2pOptions = {
                         modules: {
-                            transport: [
-                                TCP
-                            ],
+                            transport: [TCP],
                             streamMuxer: [Mplex],
                             connEncryption: [Secio],
-                            peerDiscovery: [peerDiscoveryMechanism],
+                            peerDiscovery: bootstrapNodesAvailable ? [Bootstrap] : undefined,
                             pubsub: Gossipsub
                         },
                         config: {
-                           peerDiscovery: {
+                            peerDiscovery: {
                                 ...peerDiscoveryConfig
                             }
                         }
                     };
-                    return createLibp2p(libp2pOptions);
+                    return await create(libp2pOptions);
                 } else {
                     return null;
                 }
