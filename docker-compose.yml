@@ -9,3 +9,4 @@ services:
     ports:
     - ${SERVICE_NODE_API_PORT}:${SERVICE_NODE_API_PORT}
     - ${BOOTSTRAP_NODE_PORT}:${BOOTSTRAP_NODE_PORT}
+    network_mode: host
