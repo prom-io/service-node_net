@@ -9,5 +9,6 @@ export interface PayForDataUploadRequest {
     data_owner?: string,
     buy_sum: string,
     sum: string,
-    meta_data: string
+    meta_data: string,
+    private_key: string
 }

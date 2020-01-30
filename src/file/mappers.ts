@@ -111,7 +111,8 @@ export const localFileRecordToDdsUploadRequest = (localFileRecord: LocalFileReco
 export const localFileRecordToPayForDataUploadRequest = (
     localFileRecord: LocalFileRecord,
     uploadPrice: number,
-    fileId: string
+    fileId: string,
+    privateKey: string
 ): PayForDataUploadRequest => ({
     sum: "" + uploadPrice,
     data_owner: localFileRecord.dataOwnerAddress,
@@ -123,5 +124,6 @@ export const localFileRecordToPayForDataUploadRequest = (
     name: localFileRecord.name,
     service_node: localFileRecord.serviceNodeAddress,
     size: localFileRecord.size,
-    meta_data: JSON.stringify(localFileRecord.metadata)
+    meta_data: JSON.stringify(localFileRecord.metadata),
+    private_key: privateKey
 });

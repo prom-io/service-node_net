@@ -5,7 +5,12 @@ import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import {LoggerService} from "nest-logger";
 import {FileUploadingStage} from "./types";
-import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto} from "./types/request";
+import {
+    CreateLocalFileRecordDto,
+    ExtendFileStorageDurationDto,
+    UploadChunkDto,
+    UploadLocalFileToDdsDto
+} from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {LocalFileRecord} from "./LocalFileRecord";
 import {
@@ -165,7 +170,7 @@ export class FileService {
         return createDdsFileUploadCheckResponseFromLocalFileRecord(localFile);
     }
 
-    public async uploadLocalFileToDds(localFileId: string): Promise<{success: boolean}> {
+    public async uploadLocalFileToDds(localFileId: string, uploadLocalFileToDdsDto: UploadLocalFileToDdsDto): Promise<{success: boolean}> {
         const localFile = await this.localFileRecordRepository.findById(localFileId);
 
         if (!localFile) {
@@ -173,12 +178,16 @@ export class FileService {
         }
 
         const data = fileSystem.readFileSync(localFile.localPath).toString();
-        this.processDataUploading(localFile, data);
+        this.processDataUploading(localFile, uploadLocalFileToDdsDto, data);
 
         return {success: true};
     }
 
-    private async processDataUploading(localFile: LocalFileRecord, data: string): Promise<void> {
+    private async processDataUploading(
+        localFile: LocalFileRecord,
+        uploadLocalFileToDdsDto: UploadLocalFileToDdsDto,
+        data: string
+    ): Promise<void> {
         this.log.debug(`Started processing data uploading - ${localFile._id}`);
         let stage: FileUploadingStage = FileUploadingStage.DDS_UPLOAD;
 
@@ -196,7 +205,8 @@ export class FileService {
             const payForDataUploadResponse = await this.payForDataUpload(
                 localFile,
                 ddsResponse.data.attributes.price,
-                ddsResponse.data.id
+                ddsResponse.data.id,
+                uploadLocalFileToDdsDto.privateKey
             );
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
@@ -238,8 +248,8 @@ export class FileService {
         return  (await this.ddsApiClient.uploadFile(uploadFileRequest)).data;
     }
 
-    private async payForDataUpload(localFile: LocalFileRecord, price: number, fileId: string): Promise<PayForDataUploadResponse> {
-        const payForDataUploadRequest = localFileRecordToPayForDataUploadRequest(localFile, price, fileId);
+    private async payForDataUpload(localFile: LocalFileRecord, price: number, fileId: string, privateKey: string): Promise<PayForDataUploadResponse> {
+        const payForDataUploadRequest = localFileRecordToPayForDataUploadRequest(localFile, price, fileId, privateKey);
         return (await this.billingApiClient.payForDataUpload(payForDataUploadRequest)).data;
     }
 }

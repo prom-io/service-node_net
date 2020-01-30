@@ -1,7 +1,12 @@
-import {Controller, Body, Get, Post, Patch, Param, Res, Delete, HttpCode, HttpStatus, Query} from "@nestjs/common";
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res} from "@nestjs/common";
 import {Response} from "express";
 import {FileService} from "./FileService";
-import {CreateLocalFileRecordDto, ExtendFileStorageDurationDto, UploadChunkDto} from "./types/request";
+import {
+    CreateLocalFileRecordDto,
+    ExtendFileStorageDurationDto,
+    UploadChunkDto,
+    UploadLocalFileToDdsDto
+} from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {getValidPage, getValidPageSize} from "../utils/pagination";
 
@@ -58,7 +63,10 @@ export class FileController {
     }
 
     @Post("local/:localFileId/to-dds")
-    public async uploadLocalFileToDds(@Param("localFileId") localFileId: string): Promise<void> {
+    public async uploadLocalFileToDds(
+        @Param("localFileId") localFileId: string,
+        @Body() uploadLocalFileToDdsDto: UploadLocalFileToDdsDto
+    ): Promise<void> {
         await this.fileService.uploadLocalFileToDds(localFileId);
     }
 
