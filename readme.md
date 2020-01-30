@@ -11,6 +11,7 @@
         - [Running inside Docker](#running-inside-docker)
         - [Running outside Docker](#running-outside-docker)
         - [Running unit tests](#running-unit-tests)
+     - [Environmental variables](#environmental-variables)
 - [Stages of project](#stages-of-project)
     - [What service node can do now](#what-service-node-can-do-now)
     - [What service node will do in the future](#what-service-node-will-do-in-the-future)
@@ -28,8 +29,8 @@ Bootstrap node stores information about connected nodes
 in a distributed hash table (DHT).
 
 Service node will expose API for uploading data, which 
-will be used by data validator. It will will also 
-expose API for purchasing data, which will be used by data mart. 
+is used by data validator. It also 
+exposes API for purchasing data, which will be used by data mart. 
 You can find a diagram which describes uploading data 
 [here](https://github.com/Prometeus-Network/prometeus/blob/master/docs/diagrams/Data%20upload%20(1).png), 
 and a diagram describing data purchasing process 
@@ -50,14 +51,13 @@ As such this codebase should be treated as experimental and does not contain all
 Upon starting, service node performs the following steps:
 - Distributed data storage node initialization (read [more](https://github.com/Prometeus-Network/dds) about the storage system, 
 currently based on the [fork](https://github.com/filecoin-project/lotus) of FileCoin project);
-- Ethereum network connection. Service node registers 
-itself in a private ethereum network by performing 
-a call to a boot node. After that, it downloads blockchain 
-data from ethereum network to local ethereum node;
-- Web3 initialization. Web3 is a javascript library which 
-is designated for interacting with ethereum blockchain;
-- Web3 IPC initialization. Web3 IPC is used 
-for communicating between service node and local ethereum node.
+- Local database initialization. Service node stores application data 
+in local [Nedb](https://github.com/louischatriot/nedb) database;
+- P2P-connection establishment. If Service node is started as bootstrap node,
+it connects to other bootstrap nodes using [LibP2P](https://github.com/libp2p/js-libp2p);
+- Self-registration. If started not as bootstrap node, Service node makes request
+to one of the pre-configured bootstrap-nodes to register itself so that other nodes 
+can make requests to it.
 
 
 ## How to run
@@ -65,14 +65,16 @@ for communicating between service node and local ethereum node.
 ### Prerequisites
 
 In order to run a service node, you need to install:
-- Golang. You can find it [here](https://golang.org/dl/).
 - Docker. You can find installation instructions on 
 [official website](https://docs.docker.com/install/).
 - Docker-compose, which can be found 
 [here](https://docs.docker.com/compose/install/).
 - If you want to run service-node outside of docker container, 
-you will need NodeJS installed. 
-You can find installations instructions [here](https://nodejs.org/en/download/).
+you will need NodeJS and Yarn installed. 
+You can find NodeJS installations 
+instruction [on the official website](https://nodejs.org/en/download/).
+Yarn installation instruction is also available on
+[Yarn's official website](https://legacy.yarnpkg.com/en/docs/install/#debian-stable).
 
 ### Build and run process
 
@@ -82,14 +84,8 @@ Firstly, you need to clone service-node from repository:
 git clone https://github.com/Prometeus-Network/service-node_net.git
 ````
 
-After repository is cloned, perform next commands:
-
-````
-git submodule init
-git submodule update
-````
-
-This will download go-ethereum submodule.
+After that you need to configure environmental variables in `.env` file. 
+They are described [Below](#environmental-variables)
 
 #### Running inside Docker
 
@@ -99,23 +95,45 @@ To run Service node inside Docker, execute the following command:
 docker-compose up --build
 ````
 
+Or
+
+````
+docker-compose up --build -d
+````
+
+If you want to start application in detached mode.
+
 #### Running outside Docker
 
 If you want to run service node outside docker container, you will need to perform next steps:
-- Execute `build.sh` script. It will build go-ethereum;
-- Run `npm install`. 
+- Run `yarn install`. 
 This will install dependencies required for Service node;
-- Run `npm run c`. This command will compile typescript;
-- Run `npm run start` to start the application.
+- Run `yarn run start`. This command will compile and run the application;
 
 #### Running unit tests
 
 To run unit tests, do the following:
-
-- Make sure you have NodeJS installed;
-- Run `npm run install` to install all required dependencies 
+- Run `yarn install` to install all required dependencies 
 if they are not installed yet;
 - Run `npm run test`.
+
+### Environmental variables
+
+|            Variable             |                                                                   Description                                                                  |                               Required                              | Default value   |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|-----------------|
+| `IS_BOOTSTRAP_NODE`             | Indicates whether this Service node should be started as bootstrap node                                                                        | No                                                                  | `false`         |
+| `BOOTSTRAP_NODE_PORT`           | Port which will be used by LibP2P for P2P communication if Service node started as bootstrap node                                              | Required if service node is started as bootstrap node               | `undefined`     |
+| `BOOTSTRAP_NODE_PEER_ID`        | Pre-defined peer ID which will be used by LibP2P                                                                                               | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+|`BOOTSTRAP_NODE_PUBLIC_KEY`      | Pre-defined public key which will be used by LibP2P                                                                                            | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+| `BOOTSTRAP_NODE_PRIVATE_KEY`    | Pre-defined private key which will be used by LibP2P                                                                                           | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+| `USE_LOCAL_IP_FOR_REGISTRATION` | Defines whether local IP address should be used for self-registration                                                                          | No                                                                  | `false`         |
+| `SERVICE_NODE_API_PORT`         | Port which will be used by Service node API                                                                                                    | Yes                                                                 |                 |
+| `DDS_API_BASE_URL`              | Base URL of Distributed Data Storage API                                                                                                       | Yes                                                                 |                 |
+| `BILLING_API_BASE_URL`          | Base URL of Billing API                                                                                                                        | Yes                                                                 |                 |
+| `TEMPORARY_FILES_DIRECTORY`     | Directory for storing temporary files. Please make sure that the application has read and write access to this directory                       | Yes                                                                 |                 |
+| `DDS_STUB_FILES_DIRECTORY`      | Currently this variable is unused. It was used as path for storing files when DDS was unavailable. It will be completely removed in the future | No                                                                  | `undefined`     |
+| `NEDB_DIRECTORY`                | Path to directory which is used by Nedb to store local database                                                                                | Yes                                                                 |                 |
+| `LOGGING_LEVEL`                 | Level of logging verbosity. Allowed values are `trace`, `debug`, `info`, `warning`, `error`                                                    | Yes                                                                 |                 |
 
 ## Stages of project
 
@@ -123,7 +141,6 @@ if they are not installed yet;
 
 On the current stage of development, service node has got the following:
 - Ethereum smart contracts;
-- Self registration in a private ethereum testnet;
 - API for uploading the data to the distributed data storage (used by Data Validator);
 - API for purchasing the data (used by Data Mart).
 
@@ -131,7 +148,6 @@ On the current stage of development, service node has got the following:
 ### What service node will do in the future
 
 During next stages of development, the following functionality will be added to the service node:
-- Ethereum main net;
 - Improved API for updating of the previously uploaded data into the distributed data storage (used by data validator).
 
 
