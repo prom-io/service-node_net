@@ -72,7 +72,7 @@ export class AccountService {
 
         for (const nonDefaultAccount of accounts) {
             nonDefaultAccount.default = false;
-            await this.accountRepository.save(account);
+            await this.accountRepository.save(nonDefaultAccount);
         }
     }
 
