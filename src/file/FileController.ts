@@ -67,7 +67,7 @@ export class FileController {
         @Param("localFileId") localFileId: string,
         @Body() uploadLocalFileToDdsDto: UploadLocalFileToDdsDto
     ): Promise<void> {
-        await this.fileService.uploadLocalFileToDds(localFileId);
+        await this.fileService.uploadLocalFileToDds(localFileId, uploadLocalFileToDdsDto);
     }
 
     @Get("local/:localFileId/is-fully-uploaded")

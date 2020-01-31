@@ -1,22 +1,32 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {LoggerService} from "nest-logger";
+import {AxiosError} from "axios";
 import {BillingApiClient} from "../billing-api";
 import {PurchaseDataDto} from "./types/request";
 import {AccountService} from "../account";
 import {purchaseDataDtoToPayForDataPurchaseRequest} from "./mappers";
-import {LoggerService} from "nest-logger";
-import {AxiosError} from "axios";
+import {Web3Wrapper} from "../web3";
 
 @Injectable()
 export class PurchaseService {
     constructor(
         private readonly billingApiClient: BillingApiClient,
         private readonly accountService: AccountService,
-        private readonly log: LoggerService
+        private readonly log: LoggerService,
+        private readonly web3Wrapper: Web3Wrapper
     ) {
     }
 
     public async purchaseData(purchaseDataDto: PurchaseDataDto): Promise<{success: boolean}> {
         this.log.debug(`Starting processing purchase of file ${purchaseDataDto.fileId} by data mart ${purchaseDataDto.dataMartAddress}`);
+
+        if (!this.web3Wrapper.isSignatureValid(purchaseDataDto.dataMartAddress, purchaseDataDto.signature)) {
+            throw new HttpException(
+                "Invalid signature",
+                HttpStatus.FORBIDDEN
+            );
+        }
+
         const serviceNodeAddress = (await this.accountService.getDefaultAccount()).address;
 
         return this.billingApiClient.payForDataPurchase(purchaseDataDtoToPayForDataPurchaseRequest(purchaseDataDto, serviceNodeAddress))

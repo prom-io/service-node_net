@@ -1,4 +1,5 @@
-import {IsNotEmpty, IsNumber, IsPositive, IsString, Matches} from "class-validator";
+import {IsNotEmpty, IsNumber, IsObject, IsPositive, IsString, Matches} from "class-validator";
+import {ISignedRequest, SignedRequest} from "../../../web3/types";
 
 export class PurchaseDataDto {
     @IsNotEmpty({message: "File ID must be present"})
@@ -34,11 +35,17 @@ export class PurchaseDataDto {
     @IsPositive({message: "Price must be positive"})
     public price: number;
 
-    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, price: number) {
+    @IsNotEmpty({message: "Signature must be present"})
+    @IsObject({message: "Singature must be object"})
+    public signature: SignedRequest;
+
+    // tslint:disable-next-line:max-line-length
+    constructor(fileId: string, dataMartAddress: string, dataValidatorAddress: string, dataOwnerAddress: string, price: number, signature: SignedRequest) {
         this.fileId = fileId;
         this.dataMartAddress = dataMartAddress;
         this.dataValidatorAddress = dataValidatorAddress;
         this.dataOwnerAddress = dataOwnerAddress;
         this.price = price;
+        this.signature = signature;
     }
 }

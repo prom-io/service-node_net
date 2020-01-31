@@ -3,7 +3,7 @@ import {PurchaseDataDto} from "./types/request";
 
 export const purchaseDataDtoToPayForDataPurchaseRequest = (
     purchaseDataDto: PurchaseDataDto,
-    serviceNodeAddress: string
+    serviceNodeAddress: string,
 ): PayForDataPurchaseRequest => ({
     id: purchaseDataDto.fileId,
     data_mart: purchaseDataDto.dataMartAddress,
@@ -11,5 +11,6 @@ export const purchaseDataDtoToPayForDataPurchaseRequest = (
     data_owner: purchaseDataDto.dataOwnerAddress,
     owner: purchaseDataDto.dataOwnerAddress,
     service_node: serviceNodeAddress,
-    sum: "" + purchaseDataDto.price
+    sum: "" + purchaseDataDto.price,
+    signature: purchaseDataDto.signature
 });

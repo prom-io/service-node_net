@@ -4,10 +4,11 @@ import {FileService} from "./FileService";
 import {LocalFileRecordRepository} from "./LocalFileRecordRepository";
 import {AccountModule} from "../account";
 import {DdsApiModule} from "../dds-api";
+import {Web3Module} from "../web3";
 
 @Module({
     controllers: [FileController],
     providers: [FileService, LocalFileRecordRepository],
-    imports: [AccountModule, DdsApiModule]
+    imports: [AccountModule, DdsApiModule, Web3Module]
 })
 export class FileModule {}
