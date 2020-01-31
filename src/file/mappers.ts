@@ -6,6 +6,7 @@ import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} fr
 import {BillingFileResponse} from "../billing-api/types/response";
 import {UploadFileRequest} from "../dds-api/types/request";
 import {PayForDataUploadRequest} from "../billing-api/types/request";
+import {ISignedRequest} from "../web3/types";
 
 export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRecord: LocalFileRecord): DdsFileUploadCheckResponse => {
     if (localFileRecord.uploadedToDds) {
@@ -112,7 +113,7 @@ export const localFileRecordToPayForDataUploadRequest = (
     localFileRecord: LocalFileRecord,
     uploadPrice: number,
     fileId: string,
-    privateKey: string
+    signature: ISignedRequest
 ): PayForDataUploadRequest => ({
     sum: "" + uploadPrice,
     data_owner: localFileRecord.dataOwnerAddress,
@@ -125,5 +126,5 @@ export const localFileRecordToPayForDataUploadRequest = (
     service_node: localFileRecord.serviceNodeAddress,
     size: localFileRecord.size,
     meta_data: JSON.stringify(localFileRecord.metadata),
-    private_key: privateKey
+    signature
 });

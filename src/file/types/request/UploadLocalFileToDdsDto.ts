@@ -1,11 +1,12 @@
-import {IsString, IsNotEmpty} from "class-validator";
+import {IsNotEmpty, IsObject} from "class-validator";
+import {SignedRequest} from "../../../web3/types";
 
 export class UploadLocalFileToDdsDto {
-    @IsNotEmpty({message: "Private key must be present"})
-    @IsString({message: "Private key must be string"})
-    public privateKey: string;
+    @IsNotEmpty({message: "Signature must be present"})
+    @IsObject({message: "Signature must be an object"})
+    public signature: SignedRequest;
 
-    constructor(privateKey: string) {
-        this.privateKey = privateKey;
+    constructor(signature: SignedRequest) {
+        this.signature = signature;
     }
 }

@@ -31,6 +31,8 @@ import {UploadFileRequest} from "../dds-api/types/request";
 import {DdsApiResponse} from "../dds-api/types/response";
 import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
+import {Web3Wrapper} from "../web3";
+import {ISignedRequest} from "../web3/types";
 
 @Injectable()
 export class FileService {
@@ -39,6 +41,7 @@ export class FileService {
         private readonly billingApiClient: BillingApiClient,
         private readonly ddsApiClient: DdsApiClient,
         private readonly accountService: AccountService,
+        private readonly web3Wrapper: Web3Wrapper,
         private readonly log: LoggerService
     ) {
     }
@@ -97,7 +100,8 @@ export class FileService {
         await this.billingApiClient.payForStorageDurationExtension({
             sum: extendStorageDurationResponse.data.attributes.price + "",
             serviceNode: file.serviceNodeAddress,
-            dataValidator: file.dataValidatorAddress
+            dataValidator: file.dataValidatorAddress,
+            signature: extendFileStorageDurationDto.signature
         });
 
         await this.ddsApiClient.notifyPaymentStatus({
@@ -177,6 +181,13 @@ export class FileService {
             throw new HttpException(`Could not find local file with id ${localFileId}`, HttpStatus.NOT_FOUND);
         }
 
+        if (!this.web3Wrapper.isSignatureValid(localFile.dataValidatorAddress, uploadLocalFileToDdsDto.signature)) {
+            throw new HttpException(
+                "Signature is invalid",
+                HttpStatus.FORBIDDEN
+            )
+        }
+
         const data = fileSystem.readFileSync(localFile.localPath).toString();
         this.processDataUploading(localFile, uploadLocalFileToDdsDto, data);
 
@@ -206,7 +217,7 @@ export class FileService {
                 localFile,
                 ddsResponse.data.attributes.price,
                 ddsResponse.data.id,
-                uploadLocalFileToDdsDto.privateKey
+                uploadLocalFileToDdsDto.signature
             );
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
@@ -248,8 +259,13 @@ export class FileService {
         return  (await this.ddsApiClient.uploadFile(uploadFileRequest)).data;
     }
 
-    private async payForDataUpload(localFile: LocalFileRecord, price: number, fileId: string, privateKey: string): Promise<PayForDataUploadResponse> {
-        const payForDataUploadRequest = localFileRecordToPayForDataUploadRequest(localFile, price, fileId, privateKey);
+    private async payForDataUpload(
+        localFile: LocalFileRecord,
+        price: number,
+        fileId: string,
+        signature: ISignedRequest
+    ): Promise<PayForDataUploadResponse> {
+        const payForDataUploadRequest = localFileRecordToPayForDataUploadRequest(localFile, price, fileId, signature);
         return (await this.billingApiClient.payForDataUpload(payForDataUploadRequest)).data;
     }
 }

@@ -1,3 +1,5 @@
+import {ISignedRequest} from "../../../web3/types";
+
 export interface PayForDataUploadRequest {
     id: string,
     data_validator: string,
@@ -10,5 +12,5 @@ export interface PayForDataUploadRequest {
     buy_sum: string,
     sum: string,
     meta_data: string,
-    private_key: string
+    signature: ISignedRequest
 }
