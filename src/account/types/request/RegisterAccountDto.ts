@@ -1,4 +1,6 @@
-import {IsIn, IsNotEmpty, IsString, Matches} from "class-validator";
+import {IsIn, IsNotEmpty, IsObject, IsString, Matches, ValidateIf} from "class-validator";
+import {SignedRequest} from "../../../web3/types";
+import {IsValidEthereumPrivateKeyFor} from "../../../utils/validation";
 
 export class RegisterAccountDto {
     @IsNotEmpty({message: "Account address must not be empty"})
@@ -16,8 +18,21 @@ export class RegisterAccountDto {
     @IsIn(["SERVICE_NODE", "DATA_MART", "DATA_VALIDATOR"])
     public type: string;
 
-    constructor(address: string, type: string) {
+    @ValidateIf(registerAccountDto => registerAccountDto.type === "SERVICE_NODE")
+    @IsNotEmpty({message: "Private key must be present"})
+    @IsString({message: "Private key must be string"})
+    @IsValidEthereumPrivateKeyFor("address", {message: "Private key is invalid"})
+    public privateKey?: string;
+
+    @ValidateIf(registerAccountDto => registerAccountDto.type !== "SERVICE_NODE")
+    @IsNotEmpty({message: "Signature must be present"})
+    @IsObject({message: "Signature must be object"})
+    public signature?: SignedRequest;
+
+    constructor(address: string, type: string, privateKey: string, signature: SignedRequest) {
         this.address = address;
         this.type = type;
+        this.privateKey = privateKey;
+        this.signature = signature;
     }
 }

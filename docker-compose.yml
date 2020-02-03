@@ -5,7 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-    - ./:/usr/src/app
+    - ${NEDB_DIRECTORY}
+    - ${TEMPORARY_FILES_DIRECTORY}
     ports:
     - ${SERVICE_NODE_API_PORT}:${SERVICE_NODE_API_PORT}
     - ${BOOTSTRAP_NODE_PORT}:${BOOTSTRAP_NODE_PORT}

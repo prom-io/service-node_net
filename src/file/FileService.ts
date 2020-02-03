@@ -114,21 +114,26 @@ export class FileService {
     }
 
     public async createLocalFileRecord(createLocalFileRecordDto: CreateLocalFileRecordDto): Promise<LocalFileRecordResponse> {
-        this.log.debug("Creating new local file record");
-        const fileId = uuid();
-        const serviceNodeAddress = (await this.accountService.getDefaultAccount()).address;
-        const localPath = `${config.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
-        fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
-        const localFile: LocalFileRecord = createLocalFileRecordDtoToLocalFileRecord(
-            createLocalFileRecordDto,
-            fileId,
-            localPath,
-            serviceNodeAddress
-        );
+        try {
+            this.log.debug("Creating new local file record");
+            const fileId = uuid();
+            const serviceNodeAddress = (await this.accountService.getDefaultAccount()).address;
+            const localPath = `${config.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
+            fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
+            const localFile: LocalFileRecord = createLocalFileRecordDtoToLocalFileRecord(
+                createLocalFileRecordDto,
+                fileId,
+                localPath,
+                serviceNodeAddress
+            );
 
-        this.log.debug(`Created new local file record with id ${fileId}`);
+            this.log.debug(`Created new local file record with id ${fileId}`);
 
-        return this.localFileRecordRepository.save(localFile).then(saved => localFileRecordToLocalFileRecordResponse(saved));
+            return this.localFileRecordRepository.save(localFile).then(saved => localFileRecordToLocalFileRecordResponse(saved));
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
 
     public async deleteLocalFileRecord(localFileId: string): Promise<void> {

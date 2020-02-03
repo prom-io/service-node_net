@@ -48,6 +48,9 @@ export class EnvConfig {
     @Env({type: "boolean"})
     USE_LOCAL_IP_ADDRESS_FOR_REGISTRATION = false;
 
+    @Env({type: "string"})
+    INITIAL_ACCOUNT_PRIVATE_KEY: string | undefined = undefined;
+
     public getLogLevel(): LogLevel {
         switch (this.LOGGING_LEVEL.toUpperCase().trim()) {
             case "TRACE":
