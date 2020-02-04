@@ -5371,7 +5371,7 @@ lodash.uniqby@^4.7.0:
   resolved "https://registry.yarnpkg.com/lodash.uniqby/-/lodash.uniqby-4.7.0.tgz#d99c07a669e9e6d24e1362dfe266c67616af1302"
   integrity sha1-2ZwHpmnp5tJOE2Lf4mbGdhavEwI=
 
-lodash@^4.17.10, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4:
+lodash@^4.17.10, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.17.5:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
@@ -8223,6 +8223,18 @@ ts-loader@^6.1.1:
     loader-utils "^1.0.2"
     micromatch "^4.0.0"
     semver "^6.0.0"
+
+ts-mock-imports@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/ts-mock-imports/-/ts-mock-imports-1.2.6.tgz#5a98a398c3eadb7f75b6904984bb0ba5f3fbb912"
+  integrity sha512-rZjsIEBWx9a3RGUo4Rhj/hzEGB4GPWJx46fls9EJf4UBsf5SxS2qiozf6dQp0Ym/9LC5MArlXZbZ+93wJzAmjA==
+
+ts-mockito@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/ts-mockito/-/ts-mockito-2.5.0.tgz#ad853051f2d116dfcaf6de6b0a1df2c82eda2d1f"
+  integrity sha512-b3qUeMfghRq5k5jw3xNJcnU9RKhqKnRn0k9v9QkN+YpuawrFuMIiGwzFZCpdi5MHy26o7YPnK8gag2awURl3nA==
+  dependencies:
+    lodash "^4.17.5"
 
 ts-node@^8.4.1:
   version "8.6.2"

@@ -1,7 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import {AxiosError} from "axios";
-import {config} from "../config";
-import {LogLevel} from "../config/EnvConfig";
+import {config, LogLevel, getLogLevel} from "../config";
 
 @Injectable()
 export class AxiosErrorLogger {
@@ -10,7 +9,7 @@ export class AxiosErrorLogger {
         if (axiosError.config) {
             axiosError = axiosError as AxiosError;
 
-            if (config.getLogLevel() === LogLevel.DEBUG) {
+            if (getLogLevel(config) === LogLevel.DEBUG) {
                 if (axiosError.response) {
                     if (axiosError.response.data) {
                         console.log(axiosError.response.data);
@@ -20,7 +19,7 @@ export class AxiosErrorLogger {
                 } else {
                     console.log(axiosError);
                 }
-            } else if (config.getLogLevel() === LogLevel.TRACE) {
+            } else if (getLogLevel(config) === LogLevel.TRACE) {
                 console.log(axiosError);
             }
         }
