@@ -11,9 +11,8 @@
         - [Running inside Docker](#running-inside-docker)
         - [Running outside Docker](#running-outside-docker)
         - [Running unit tests](#running-unit-tests)
-- [Stages of project](#stages-of-project)
-    - [What service node can do now](#what-service-node-can-do-now)
-    - [What service node will do in the future](#what-service-node-will-do-in-the-future)
+- [Current Stage of project](#current-stage-of-project)
+
 
 ## Description
 
@@ -112,22 +111,10 @@ To run unit tests, do the following:
 if they are not installed yet;
 - Run `npm run test`.
 
-## Stages of project
-
-### What service node can do now
+## Current Stage of project
 
 On the current stage of development, service node has got the following:
 - Ethereum smart contracts;
 - Self registration in a private ethereum testnet;
 - API for uploading the data to the distributed data storage (used by Data Validator);
 - API for purchasing the data (used by Data Mart).
-
-
-### What service node will do in the future
-
-During next stages of development, the following functionality will be added to the service node:
-- Ethereum main net;
-- Improved API for updating of the previously uploaded data into the distributed data storage (used by data validator).
-
-
-
