@@ -1,7 +1,6 @@
 import {Module} from "@nestjs/common";
 import {ScheduleModule} from "nest-schedule";
 import TCP from "libp2p-tcp";
-import crypto from "libp2p-crypto";
 import Mplex from "libp2p-mplex";
 import Secio from "libp2p-secio";
 import Bootstrap from "libp2p-bootstrap";
