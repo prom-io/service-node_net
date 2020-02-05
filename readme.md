@@ -75,6 +75,24 @@ You can find NodeJS installations
 instruction [on the official website](https://nodejs.org/en/download/).
 Yarn installation instruction is also available on
 [Yarn's official website](https://legacy.yarnpkg.com/en/docs/install/#debian-stable).
+- Create and configure `bootstrap-nodes.json` file if you don't want to use default bootstrap nodes. This file contains 
+information about bootstrap nodes which help to discover other nodes in network. Below is the content of default `bootstrap-nodes.json` file:
+```
+{
+  "bootstrapNodes": [
+    {
+      "ipAddress": "188.166.37.102",
+      "port": 2000,
+      "libp2pAddress": "/ip4/188.166.37.102/tcp/12345/p2p/QmekndSMXKCGLFXp4peHpf9ynLWno6QFbo1uqMq8HBPqtz"
+    },
+    {
+      "ipAddress": "134.209.95.239",
+      "port": 2000,
+      "libp2pAddress": "/ip4/134.209.95.239/tcp/12346/p2p/QmaF43H5yth1nGWBF4xYEkqaL7X4uUsGNr3vhFbsAWnje6"
+    }
+  ]
+}
+```
 
 ### Build and run process
 
@@ -106,6 +124,7 @@ If you want to start application in detached mode.
 #### Running outside Docker
 
 If you want to run service node outside docker container, you will need to perform next steps:
+- Run `yarn global add @nestjs/cli` to install NestJS CLI which is required to run the application
 - Run `yarn install`. 
 This will install dependencies required for Service node;
 - Run `yarn run start`. This command will compile and run the application;
@@ -115,25 +134,25 @@ This will install dependencies required for Service node;
 To run unit tests, do the following:
 - Run `yarn install` to install all required dependencies 
 if they are not installed yet;
-- Run `npm run test`.
+- Run `yarn run test`.
 
 ### Environmental variables
 
-|            Variable             |                                                                   Description                                                                  |                               Required                              | Default value   |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|-----------------|
-| `IS_BOOTSTRAP_NODE`             | Indicates whether this Service node should be started as bootstrap node                                                                        | No                                                                  | `false`         |
-| `BOOTSTRAP_NODE_PORT`           | Port which will be used by LibP2P for P2P communication if Service node started as bootstrap node                                              | Required if service node is started as bootstrap node               | `undefined`     |
-| `BOOTSTRAP_NODE_PEER_ID`        | Pre-defined peer ID which will be used by LibP2P                                                                                               | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
-|`BOOTSTRAP_NODE_PUBLIC_KEY`      | Pre-defined public key which will be used by LibP2P                                                                                            | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
-| `BOOTSTRAP_NODE_PRIVATE_KEY`    | Pre-defined private key which will be used by LibP2P                                                                                           | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
-| `USE_LOCAL_IP_FOR_REGISTRATION` | Defines whether local IP address should be used for self-registration                                                                          | No                                                                  | `false`         |
-| `SERVICE_NODE_API_PORT`         | Port which will be used by Service node API                                                                                                    | Yes                                                                 |                 |
-| `DDS_API_BASE_URL`              | Base URL of Distributed Data Storage API                                                                                                       | Yes                                                                 |                 |
-| `BILLING_API_BASE_URL`          | Base URL of Billing API                                                                                                                        | Yes                                                                 |                 |
-| `TEMPORARY_FILES_DIRECTORY`     | Directory for storing temporary files. Please make sure that the application has read and write access to this directory                       | Yes                                                                 |                 |
-| `DDS_STUB_FILES_DIRECTORY`      | Currently this variable is unused. It was used as path for storing files when DDS was unavailable. It will be completely removed in the future | No                                                                  | `undefined`     |
-| `NEDB_DIRECTORY`                | Path to directory which is used by Nedb to store local database                                                                                | Yes                                                                 |                 |
-| `LOGGING_LEVEL`                 | Level of logging verbosity. Allowed values are `trace`, `debug`, `info`, `warning`, `error`                                                    | Yes                                                                 |                 |
+|            Variable             |                                                                   Description                                                                                                                                                                            |                               Required                              | Default value   |
+|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|-----------------|
+| `IS_BOOTSTRAP_NODE`             | Indicates whether this Service node should be started as bootstrap node                                                                                                                                                                                  | No                                                                  | `false`         |
+| `BOOTSTRAP_NODE_PORT`           | Port which will be used by LibP2P for P2P communication if Service node started as bootstrap node                                                                                                                                                        | Required if service node is started as bootstrap node               | `undefined`     |
+| `BOOTSTRAP_NODE_PEER_ID`        | Pre-defined peer ID which will be used by LibP2P                                                                                                                                                                                                         | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+|`BOOTSTRAP_NODE_PUBLIC_KEY`      | Pre-defined public key which will be used by LibP2P                                                                                                                                                                                                      | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+| `BOOTSTRAP_NODE_PRIVATE_KEY`    | Pre-defined private key which will be used by LibP2P                                                                                                                                                                                                     | Required if you want to run bootstrap node with pre-defined peer ID | `undefined`     |
+| `USE_LOCAL_IP_FOR_REGISTRATION` | Defines whether local IP address should be used for self-registration. This may be useful for development purposes or if your bootstrap nodes are located in your local network                                                                          | No                                                                  | `false`         |
+| `SERVICE_NODE_API_PORT`         | Port which will be used by Service node API                                                                                                                                                                                                              | Yes                                                                 |                 |
+| `DDS_API_BASE_URL`              | Base URL of Distributed Data Storage API                                                                                                                                                                                                                 | Yes                                                                 |                 |
+| `BILLING_API_BASE_URL`          | Base URL of Billing API                                                                                                                                                                                                                                  | Yes                                                                 |                 |
+| `TEMPORARY_FILES_DIRECTORY`     | Directory for storing temporary files. Please make sure that the application has read and write access to this directory                                                                                                                                 | Yes                                                                 |                 |
+| `DDS_STUB_FILES_DIRECTORY`      | Currently this variable is unused. It was used as path for storing files when DDS was unavailable. It will be completely removed in the future                                                                                                           | No                                                                  | `undefined`     |
+| `NEDB_DIRECTORY`                | Path to directory which is used by Nedb to store local database                                                                                                                                                                                          | Yes                                                                 |                 |
+| `LOGGING_LEVEL`                 | Level of logging verbosity. Allowed values are `debug`, `info`, `warning`, `error`                                                                                                                                                                       | Yes                                                                 |                 |
 
 ## Stages of project
 
