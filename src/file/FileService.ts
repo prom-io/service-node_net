@@ -49,11 +49,14 @@ export class FileService {
     public async getFile(fileId: string, httpResponse: Response): Promise<void> {
         try {
             this.log.debug(`Retrieving file with id ${fileId}`);
+            /*
             const {data} = await this.ddsApiClient.getFile(fileId);
             this.log.debug(`Retrieved file with id ${fileId}`);
             httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
-            data.pipe(httpResponse);
+            data.pipe(httpResponse);*/
+            httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
         } catch (error) {
+            console.log(error);
             throw error;
         }
     }
@@ -229,11 +232,11 @@ export class FileService {
             stage = FileUploadingStage.DDS_PAYMENT_NOTIFICATION;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
-            await this.ddsApiClient.notifyPaymentStatus({
+            /*await this.ddsApiClient.notifyPaymentStatus({
                 file_id: ddsResponse.data.id,
                 amount: ddsResponse.data.attributes.price,
                 status: "success"
-            });
+            });*/
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
 

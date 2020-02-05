@@ -9,7 +9,7 @@ export class AxiosErrorLogger {
         if (axiosError.config) {
             axiosError = axiosError as AxiosError;
 
-            if (getLogLevel(config) === LogLevel.DEBUG) {
+            if (getLogLevel(config) === LogLevel.INFO) {
                 if (axiosError.response) {
                     if (axiosError.response.data) {
                         console.log(axiosError.response.data);
@@ -19,7 +19,7 @@ export class AxiosErrorLogger {
                 } else {
                     console.log(axiosError);
                 }
-            } else if (getLogLevel(config) === LogLevel.TRACE) {
+            } else if (getLogLevel(config) === LogLevel.DEBUG) {
                 console.log(axiosError);
             }
         }

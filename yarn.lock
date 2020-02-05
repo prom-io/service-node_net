@@ -623,6 +623,11 @@
   resolved "https://registry.yarnpkg.com/@types/pull-stream/-/pull-stream-3.6.0.tgz#583c2cbf873839ea456244b6b873cbceab897f87"
   integrity sha512-d7cobAytjsYaTluqFTJopLbdZRs1HBkU+N07/zCtsXANZ5s9riDazRkvxkAUfmRzCvXqYAsGgnJHgX2lInIOQg==
 
+"@types/random-number@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@types/random-number/-/random-number-0.0.0.tgz#e654528361018d520c6f9c81b03c80361857a6bb"
+  integrity sha512-LSXP+32W+9x86qP6eTTpvDrCSJoz2bLdeMmQumnYy0+s9NEA6qSitT3QwuxlDJ4Y9SNU52H8qUQ6l/gXm5ycRQ==
+
 "@types/range-parser@*":
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
@@ -6933,6 +6938,11 @@ querystring@0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
   integrity sha1-sgmEkgO7Jd+CDadW50cAWHhSFiA=
+
+random-number@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/random-number/-/random-number-0.0.9.tgz#5907b96f05041807c52aed601c869524d86fbbd5"
+  integrity sha512-ipG3kRCREi/YQpi2A5QGcvDz1KemohovWmH6qGfboVyyGdR2t/7zQz0vFxrfxpbHQgPPdtVlUDaks3aikD1Ljw==
 
 randombytes@^2.0.0, randombytes@^2.0.1, randombytes@^2.0.5, randombytes@^2.1.0:
   version "2.1.0"
