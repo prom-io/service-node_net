@@ -71,6 +71,7 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
     }
 
     public async getNodesByAddressAndType(address: string, type: NodeType): Promise<NodeResponse[]> {
+        this.log.debug(`Searching for nodes with ${address} address and ${type} type`);
         return this.registeredNodes
             .filter(node => node.type === type)
             .filter(node => node.addresses.includes(address));

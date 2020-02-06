@@ -74,6 +74,7 @@ import {AccountModule} from "../account";
             inject: [BootstrapNodesContainer]
         }
     ],
-    imports: [ScheduleModule.register(), AccountModule]
+    imports: [ScheduleModule.register(), AccountModule],
+    exports: [DiscoveryService]
 })
 export class DiscoveryModule {}
