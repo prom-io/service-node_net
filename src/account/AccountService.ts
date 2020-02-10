@@ -1,12 +1,15 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {AxiosError} from "axios";
 import {LoggerService} from "nest-logger";
+import uuid from "uuid/v4";
+import {Account} from "./Account";
 import {RegisterAccountDto} from "./types/request";
 import {BillingApiClient} from "../billing-api";
 import {AccountRepository} from "./AccountRepository";
 import {EntityType} from "../nedb/entity";
 import {
-    AccountRegistrationStatusResponse, AccountRole,
+    AccountRegistrationStatusResponse,
+    AccountRole,
     BalanceOfAccountResponse,
     BalancesOfLocalAccountsResponse,
     DataOwnersOfDataValidatorResponse,
@@ -14,6 +17,7 @@ import {
 } from "./types/response";
 import {AxiosErrorLogger} from "../logging";
 import {billingAccountRoleToAccountRole} from "./mappers";
+import {BillingAccountRole} from "../billing-api/types/response";
 
 @Injectable()
 export class AccountService {
@@ -204,13 +208,36 @@ export class AccountService {
     }
 
     private async registerServiceNodeAccount(registerAccountDto: RegisterAccountDto): Promise<void> {
-        await this.billingApiClient.registerServiceNode({owner: registerAccountDto.address});
-        await this.accountRepository.save({
-            _type: EntityType.ACCOUNT,
-            address: registerAccountDto.address,
-            accountType: "SERVICE_NODE",
-            default: false
-        });
+        const accountRegistrationStatus = (await this.billingApiClient.isAccountRegistered(registerAccountDto.address)).data;
+
+        if (accountRegistrationStatus.is_registered) {
+            const accountRole = (await this.billingApiClient.getAccountRole(registerAccountDto.address)).data;
+
+            if (accountRole.role !== BillingAccountRole.SERVICE_NODE) {
+                throw new HttpException(
+                    `Account with address ${registerAccountDto.address} has already been registered and it's not service node`,
+                    HttpStatus.CONFLICT
+                )
+            }
+
+            const account: Account = {
+                _type: EntityType.ACCOUNT,
+                address: registerAccountDto.address,
+                _id: uuid(),
+                default: true,
+                accountType: "SERVICE_NODE"
+            };
+
+            await this.accountRepository.save(account);
+        } else {
+            await this.billingApiClient.registerServiceNode({owner: registerAccountDto.address});
+            await this.accountRepository.save({
+                _type: EntityType.ACCOUNT,
+                address: registerAccountDto.address,
+                accountType: "SERVICE_NODE",
+                default: false
+            });
+        }
     }
 
     private async registerDataValidatorAccount(registerAccountDto: RegisterAccountDto): Promise<void> {
