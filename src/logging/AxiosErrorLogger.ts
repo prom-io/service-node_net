@@ -9,19 +9,27 @@ export class AxiosErrorLogger {
         if (axiosError.config) {
             axiosError = axiosError as AxiosError;
 
-            if (getLogLevel(config) === LogLevel.INFO) {
-                if (axiosError.response) {
-                    if (axiosError.response.data) {
-                        console.log(axiosError.response.data);
-                    } else {
-                        console.log(axiosError.response);
+            switch (getLogLevel(config)) {
+                case LogLevel.DEBUG:
+                    console.error(axiosError);
+                    break;
+                case LogLevel.INFO:
+                    console.error(axiosError.trace);
+                    if (axiosError.response) {
+                        if (axiosError.response.data) {
+                            console.log(axiosError.response.data);
+                        } else {
+                            console.log(axiosError.response);
+                        }
                     }
-                } else {
-                    console.log(axiosError);
-                }
-            } else if (getLogLevel(config) === LogLevel.DEBUG) {
-                console.log(axiosError);
+                    break;
+                case LogLevel.WARN:
+                case LogLevel.ERROR:
+                    console.error(axiosError.trace);
+                    break;
             }
+        } else {
+            console.error(axiosError.trace);
         }
     }
 }

@@ -1,7 +1,6 @@
 import {EnvConfig} from "./EnvConfig";
 
 export enum LogLevel {
-    TRACE = "TRACE",
     DEBUG = "DEBUG",
     INFO = "INFO",
     WARN = "WARN",
@@ -10,8 +9,6 @@ export enum LogLevel {
 
 export const getLogLevel = (config: EnvConfig): LogLevel => {
     switch (config.LOGGING_LEVEL.toUpperCase().trim()) {
-        case "TRACE":
-            return LogLevel.TRACE;
         case "DEBUG":
             return LogLevel.DEBUG;
         case "INFO":
