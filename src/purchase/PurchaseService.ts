@@ -1,6 +1,7 @@
 import {HttpException, HttpStatus, Inject, Injectable} from "@nestjs/common";
 import {LoggerService} from "nest-logger";
 import {AxiosError, AxiosInstance} from "axios";
+import {stringify} from "query-string";
 import {PurchaseDataDto} from "./types/request";
 import {DataPurchaseResponse, FileKey} from "./types/response";
 import {purchaseDataDtoToPayForDataPurchaseRequest} from "./mappers";
@@ -63,7 +64,7 @@ export class PurchaseService {
 
         if (!nodePossessingFile) {
             throw new HttpException(
-                `Could not find any data validator node which posseses file with id ${purchaseDataDto.fileId}`,
+                `Could not find any data validator node which possesses file with id ${purchaseDataDto.fileId}`,
                 HttpStatus.SERVICE_UNAVAILABLE
             )
         }
@@ -71,7 +72,12 @@ export class PurchaseService {
         return this.billingApiClient.payForDataPurchase(purchaseDataDtoToPayForDataPurchaseRequest(purchaseDataDto, serviceNodeAddress))
             .then(async () => {
                 this.log.debug("Transaction has been successfully completed");
-                const fileKey: FileKey = (await this.axios.get(`http://${nodePossessingFile.ipAddress}:${nodePossessingFile.port}/api/v3/files/${purchaseDataDto.fileId}/key`)).data;
+                const signature = {
+                    ...purchaseDataDto.signature,
+                    address: purchaseDataDto.dataMartAddress
+                };
+                const signatureStringified = stringify(signature);
+                const fileKey: FileKey = (await this.axios.get(`http://${nodePossessingFile.ipAddress}:${nodePossessingFile.port}/api/v3/files/${purchaseDataDto.fileId}/key?${signatureStringified}`)).data;
                 return {fileKey};
             })
             .catch((error: AxiosError) => {

@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsNumber, IsObject, IsPositive, IsString, Matches} from "class-validator";
+import {IsNotEmpty, IsNumber, IsObject, IsPositive, IsString, Matches, ValidateNested} from "class-validator";
 import {ISignedRequest, SignedRequest} from "../../../web3/types";
 
 export class PurchaseDataDto {
@@ -36,7 +36,8 @@ export class PurchaseDataDto {
     public price: number;
 
     @IsNotEmpty({message: "Signature must be present"})
-    @IsObject({message: "Singature must be object"})
+    @IsObject({message: "Signature must be object"})
+    @ValidateNested()
     public signature: SignedRequest;
 
     // tslint:disable-next-line:max-line-length
