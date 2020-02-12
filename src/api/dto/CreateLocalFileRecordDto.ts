@@ -33,16 +33,6 @@ export class CreateLocalFileRecordDto {
     @IsInt({message: "File size must be integer number which represents size in bytes"})
     public size: number;
 
-    @IsNotEmpty({message: "Service node address must be specified"})
-    @IsString({message: "Service node address must be string"})
-    @Matches(
-        new RegExp("^0x[a-fA-F0-9]{40}$"),
-        {
-            message: "Service node address must be valid Ethereum address"
-        }
-    )
-    public serviceNodeAddress: string;
-
     @IsNotEmpty({message: "Data owner address must be specified"})
     @IsString({message: "Data owner address must be string"})
     @Matches(
@@ -58,7 +48,7 @@ export class CreateLocalFileRecordDto {
     @IsPositive({message: "Price must be positive"})
     public price: number;
 
-    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string | undefined, extension: string, mimeType: string, size: number, serviceNodeAddress: string, dataValidatorAddress: string, price: number) {
+    constructor(keepUntil: string, name: string, additional: FileMetadata, dataOwnerAddress: string | undefined, extension: string, mimeType: string, size: number, dataValidatorAddress: string, price: number) {
         this.keepUntil = keepUntil;
         this.name = name;
         this.additional = additional;
@@ -66,7 +56,6 @@ export class CreateLocalFileRecordDto {
         this.extension = extension;
         this.mimeType = mimeType;
         this.size = size;
-        this.serviceNodeAddress = serviceNodeAddress;
         this.dataValidatorAddress = dataValidatorAddress;
         this.price = price;
     }

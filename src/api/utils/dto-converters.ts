@@ -49,7 +49,11 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
     }
 };
 
-export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordDto: CreateLocalFileRecordDto, id: string, localPath: string): LocalFileRecord => {
+export const createLocalFileRecordDtoToLocalFileRecord = (
+    createLocalFileRecordDto: CreateLocalFileRecordDto,
+    id: string, localPath: string,
+    serviceNodeAddress: string
+): LocalFileRecord => {
     return {
         _type: EntityType.LOCAL_FILE_RECORD,
         _id: id,
@@ -60,7 +64,7 @@ export const createLocalFileRecordDtoToLocalFileRecord = (createLocalFileRecordD
         name: createLocalFileRecordDto.name,
         size: createLocalFileRecordDto.size,
         dataValidatorAddress: createLocalFileRecordDto.dataValidatorAddress,
-        serviceNodeAddress: createLocalFileRecordDto.serviceNodeAddress,
+        serviceNodeAddress,
         dataOwnerAddress: createLocalFileRecordDto.dataOwnerAddress || "0x0",
         keepUntil: createLocalFileRecordDto.keepUntil,
         uploadedToDds: false,
