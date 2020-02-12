@@ -15,3 +15,5 @@ profile.cov
 .vscode
 
 dist
+
+storage/**

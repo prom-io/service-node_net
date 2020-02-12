@@ -1,4 +1,6 @@
-import {DdsApiRequest, DdsApiResponse, DdsApiResponseData, DdsApiType} from "./types";
+import {DdsApiType} from "./types";
+import {DdsApiRequest} from "./types/request";
+import {DdsApiResponse, DdsApiResponseData} from "./types/response";
 
 export const wrapDdsApiRequest = <T>(data: T, type: DdsApiType): DdsApiRequest<T> => ({
     attributes: data,

@@ -1,16 +1,14 @@
-FROM node:10
+FROM node:12
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY . .
 
-ARG SERVICE_NODE_API_PORT
-ENV SERVICE_NODE_API_PORT $SERVICE_NODE_API_PORT
-
-ARG GETH_RPC_PORT
-ENV GETH_RPC_PORT $GETH_RPC_PORT
+RUN yarn global add @nestjs/cli
+RUN yarn install
+RUN yarn build
 
 EXPOSE $SERVICE_NODE_API_PORT
-EXPOSE $GETH_RPC_PORT
+EXPOSE $BOOTSTRAP_NODE_PORT
 
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/main.js"]

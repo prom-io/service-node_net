@@ -1,6 +1,4 @@
-go-ethereum
-go-ethereum/**/
-src
-src/**/
 node_modules
 node_modules/**/
+storage
+storage/**/
