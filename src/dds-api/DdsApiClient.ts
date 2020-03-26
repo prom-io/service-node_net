@@ -1,12 +1,21 @@
 import {Inject, Injectable} from "@nestjs/common";
-import {AxiosError, AxiosInstance, AxiosPromise} from "axios";
+import {AxiosInstance, AxiosPromise} from "axios";
 import uuid4 from "uuid/v4";
 import fileSystem from "fs";
 import randomNumber from "random-number";
-import {ExtendStorageDurationRequest, NotifyPaymentStatusRequest, UploadFileRequest} from "./types/request";
+import FormData from "form-data";
+import {
+    ExtendStorageDurationRequest,
+    GetFileStoragePriceRequest,
+    NewUploadFileRequest,
+    NotifyPaymentStatusRequest,
+    UploadFileRequest
+} from "./types/request";
 import {
     DdsApiResponse,
     ExtendFileStorageDurationResponse,
+    FileStoragePriceResponse,
+    NewUploadFileResponse,
     NotifyPaymentStatusResponse,
     UploadFileResponse
 } from "./types/response";
@@ -16,6 +25,23 @@ import {DdsApiType} from "./types";
 @Injectable()
 export class DdsApiClient {
     constructor(@Inject("ddsApiAxiosInstance") private readonly axios: AxiosInstance) {
+    }
+
+    public getFileStoragePrice(fileSize: number): AxiosPromise<FileStoragePriceResponse> {
+        const getFileStoragePriceRequest: GetFileStoragePriceRequest = {
+            fileSize: `${fileSize}`
+        };
+
+        return this.axios.post("/price/info", getFileStoragePriceRequest);
+    }
+
+    public uploadFile_NEW(newUploadFileRequest: NewUploadFileRequest): AxiosPromise<NewUploadFileResponse> {
+        const formData = new FormData();
+        formData.append("filename", newUploadFileRequest.filename);
+        formData.append("file", newUploadFileRequest.file, newUploadFileRequest.filename);
+        return this.axios.post("/file/upload", formData, {
+            headers: formData.getHeaders()
+        });
     }
 
     public uploadFile(uploadFileRequest: UploadFileRequest): AxiosPromise<DdsApiResponse<UploadFileResponse>> {
@@ -106,6 +132,12 @@ export class DdsApiClient {
 
     public getFile(fileId: string): AxiosPromise {
         return this.axios.get(`/files/${fileId}`, {
+            responseType: "stream"
+        });
+    }
+
+    public getFile_NEW(fileId: string): AxiosPromise {
+        return this.axios.get(`/file/download/${fileId}`, {
             responseType: "stream"
         });
     }

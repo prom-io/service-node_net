@@ -4,6 +4,7 @@ import fileSystem from "fs";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import {LoggerService} from "nest-logger";
+import randomNumber from "random-number";
 import {FileUploadingStage} from "./types";
 import {
     CreateLocalFileRecordDto,
@@ -18,7 +19,6 @@ import {
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
     localFileRecordToDdsFileResponse,
-    localFileRecordToDdsUploadRequest,
     localFileRecordToLocalFileRecordResponse,
     localFileRecordToPayForDataUploadRequest
 } from "./mappers";
@@ -27,9 +27,8 @@ import {config} from "../config";
 import {DdsApiClient} from "../dds-api";
 import {BillingApiClient} from "../billing-api";
 import {AccountService} from "../account";
-import {UploadFileRequest} from "../dds-api/types/request";
-import {DdsApiResponse} from "../dds-api/types/response";
-import {DdsFileInfo} from "../dds-api/types";
+import {NewUploadFileRequest} from "../dds-api/types/request";
+import {FileStoragePriceResponse, NewUploadFileResponse} from "../dds-api/types/response";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
 import {Web3Wrapper} from "../web3";
 import {ISignedRequest} from "../web3/types";
@@ -49,12 +48,11 @@ export class FileService {
     public async getFile(fileId: string, httpResponse: Response): Promise<void> {
         try {
             this.log.debug(`Retrieving file with id ${fileId}`);
-            /*
-            const {data} = await this.ddsApiClient.getFile(fileId);
+
+            const {data} = await this.ddsApiClient.getFile_NEW(fileId);
             this.log.debug(`Retrieved file with id ${fileId}`);
             httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
-            data.pipe(httpResponse);*/
-            httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
+            data.pipe(httpResponse);
         } catch (error) {
             console.log(error);
             throw error;
@@ -196,7 +194,7 @@ export class FileService {
             )
         }
 
-        const data = fileSystem.readFileSync(localFile.localPath).toString();
+        const data = fileSystem.readFileSync(localFile.localPath);
         this.processDataUploading(localFile, uploadLocalFileToDdsDto, data);
 
         return {success: true};
@@ -205,44 +203,54 @@ export class FileService {
     private async processDataUploading(
         localFile: LocalFileRecord,
         uploadLocalFileToDdsDto: UploadLocalFileToDdsDto,
-        data: string
+        data: Buffer
     ): Promise<void> {
         this.log.debug(`Started processing data uploading - ${localFile._id}`);
-        let stage: FileUploadingStage = FileUploadingStage.DDS_UPLOAD;
+        let stage: FileUploadingStage = FileUploadingStage.GETTING_FILE_STORAGE_PRICE;
 
         try {
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
-            const uploadFileRequest = localFileRecordToDdsUploadRequest(localFile, data);
-            const ddsResponse = await this.uploadFileToDds(uploadFileRequest);
+            const fileStoragePriceResponse: FileStoragePriceResponse = /*(await this.ddsApiClient.getFileStoragePrice(data.length)).data*/ {
+                amount: `${randomNumber({
+                    min: 0.0000001,
+                    max: 1
+                })}`
+            };
+
+            this.log.debug(`Stage ${stage} gas been completed -${localFile._id}`);
+
+            stage = FileUploadingStage.DDS_UPLOAD;
+
+            this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
+
+            const fileId = uuid();
+
+            const uploadFileRequest: NewUploadFileRequest = {
+                file: data,
+                filename: fileId
+            };
+
+            await this.uploadFileToDds(uploadFileRequest);
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
-            this.log.debug(`Assigned DDS ID is ${ddsResponse.data.id} - ${localFile._id}`);
+            this.log.debug(`Assigned DDS ID is ${fileId} - ${localFile._id}`);
+
             stage = FileUploadingStage.BILLING_PROCESSING;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
             const payForDataUploadResponse = await this.payForDataUpload(
                 localFile,
-                ddsResponse.data.attributes.price,
-                ddsResponse.data.id,
+                Number(fileStoragePriceResponse.amount),
+                fileId,
                 uploadLocalFileToDdsDto.signature
             );
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
-            stage = FileUploadingStage.DDS_PAYMENT_NOTIFICATION;
-            this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
-
-            /*await this.ddsApiClient.notifyPaymentStatus({
-                file_id: ddsResponse.data.id,
-                amount: ddsResponse.data.attributes.price,
-                status: "success"
-            });*/
-
-            this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
 
             localFile.failed = false;
-            localFile.storagePrice = ddsResponse.data.attributes.price;
-            localFile.ddsId = ddsResponse.data.id;
+            localFile.storagePrice = Number(fileStoragePriceResponse.amount);
+            localFile.ddsId = fileId;
             localFile.uploadedToDds = true;
             localFile.dataOwnerAddress = payForDataUploadResponse.address;
             localFile.privateKey = payForDataUploadResponse.privateKey;
@@ -252,7 +260,7 @@ export class FileService {
             this.log.debug(`File uploading has been completed - ${localFile._id}`);
         } catch (error) {
             this.log.error(`Data upload failed at stage: ${stage}`);
-
+            console.log(error);
             if (error.response) {
                 console.log(error.response.data);
             }
@@ -263,8 +271,8 @@ export class FileService {
         }
     }
 
-    private async uploadFileToDds(uploadFileRequest: UploadFileRequest): Promise<DdsApiResponse<DdsFileInfo>> {
-        return  (await this.ddsApiClient.uploadFile(uploadFileRequest)).data;
+    private async uploadFileToDds(uploadFileRequest: NewUploadFileRequest): Promise<NewUploadFileResponse> {
+        return  (await this.ddsApiClient.uploadFile_NEW(uploadFileRequest)).data;
     }
 
     private async payForDataUpload(
