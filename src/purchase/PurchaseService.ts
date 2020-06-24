@@ -1,6 +1,7 @@
 import {HttpException, HttpStatus, Inject, Injectable} from "@nestjs/common";
 import {LoggerService} from "nest-logger";
 import {AxiosError, AxiosInstance} from "axios";
+import queryString from "querystring";
 import {PurchaseDataDto} from "./types/request";
 import {DataPurchaseResponse, FileKey} from "./types/response";
 import {purchaseDataDtoToPayForDataPurchaseRequest} from "./mappers";
@@ -71,7 +72,11 @@ export class PurchaseService {
         return this.billingApiClient.payForDataPurchase(purchaseDataDtoToPayForDataPurchaseRequest(purchaseDataDto, serviceNodeAddress))
             .then(async () => {
                 this.log.debug("Transaction has been successfully completed");
-                const fileKey: FileKey = (await this.axios.get(`http://${nodePossessingFile.ipAddress}:${nodePossessingFile.port}/api/v3/files/${purchaseDataDto.fileId}/key`)).data;
+                const requestParameters = queryString.stringify({
+                    ...purchaseDataDto.signature,
+                    address: purchaseDataDto.dataMartAddress
+                });
+                const fileKey: FileKey = (await this.axios.get(`http://${nodePossessingFile.ipAddress}:${nodePossessingFile.port}/api/v3/files/${purchaseDataDto.fileId}/key?${requestParameters}`)).data;
                 return {fileKey};
             })
             .catch((error: AxiosError) => {
