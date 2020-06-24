@@ -14,9 +14,9 @@ export const IsValidEthereumPrivateKeyFor = (
     options,
     constraints: [addressProperty],
     validator: {
-        validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> | boolean {
+        validate(value: any, validationArguments?: ValidationArguments): boolean {
             const [relatedPropertyName] = validationArguments.constraints;
-            const address = (validationArguments as any)[relatedPropertyName];
+            const address = (validationArguments.object as any)[relatedPropertyName];
 
             try {
                 return new Web3().eth.accounts.privateKeyToAccount(value).address === address;
