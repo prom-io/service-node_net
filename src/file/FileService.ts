@@ -196,7 +196,7 @@ export class FileService {
             )
         }
 
-        const data = fileSystem.readFileSync(localFile.localPath).toString();
+        const data = fileSystem.readFileSync(localFile.localPath).toString("base64");
         this.processDataUploading(localFile, uploadLocalFileToDdsDto, data);
 
         return {success: true};
