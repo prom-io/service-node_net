@@ -9,6 +9,8 @@ import {
 } from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {getValidPage, getValidPageSize} from "../utils/pagination";
+import {GetFileKeyRequest} from "../data-validator-api/types/request";
+import {FileKey} from "../purchase/types/response";
 
 @Controller("api/v1/files")
 export class FileController {
@@ -28,6 +30,11 @@ export class FileController {
     @Get(":fileId")
     public async getFile(@Param("fileId") fileId: string, @Res() response: Response): Promise<void> {
         await this.fileService.getFile(fileId, response);
+    }
+
+    @Get(":fileId/key")
+    public async getFileKey(@Param("fileId") fileId: string, @Query() getFileKeyRequest: GetFileKeyRequest): Promise<FileKey> {
+        return this.fileService.getFileKey(fileId, getFileKeyRequest);
     }
 
     @Patch(":fileId")

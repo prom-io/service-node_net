@@ -8,6 +8,7 @@ import {TransactionModule} from "./transaction";
 import {PurchaseModule} from "./purchase";
 import {DiscoveryModule} from "./discovery";
 import {StatusCheckModule} from "./status-check";
+import {DataValidatorApiModule} from "./data-validator-api";
 
 @Module({
     imports: [
@@ -19,7 +20,8 @@ import {StatusCheckModule} from "./status-check";
         TransactionModule,
         PurchaseModule,
         DiscoveryModule,
-        StatusCheckModule
+        StatusCheckModule,
+        DataValidatorApiModule
     ]
 })
 export class AppModule {}

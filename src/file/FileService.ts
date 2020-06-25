@@ -33,6 +33,12 @@ import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
 import {Web3Wrapper} from "../web3";
 import {ISignedRequest} from "../web3/types";
+import {GetFileKeyRequest} from "../data-validator-api/types/request";
+import {FileKey} from "../purchase/types/response";
+import {DataValidatorApiClientFactory} from "../data-validator-api";
+import {DiscoveryService} from "../discovery";
+import {NodeResponse} from "../discovery/types/response";
+import {NodeType} from "../discovery/types";
 
 @Injectable()
 export class FileService {
@@ -40,6 +46,8 @@ export class FileService {
         private readonly localFileRecordRepository: LocalFileRecordRepository,
         private readonly billingApiClient: BillingApiClient,
         private readonly ddsApiClient: DdsApiClient,
+        private readonly dataValidatorApiClientFactory: DataValidatorApiClientFactory,
+        private readonly discoveryService: DiscoveryService,
         private readonly accountService: AccountService,
         private readonly web3Wrapper: Web3Wrapper,
         private readonly log: LoggerService
@@ -276,5 +284,79 @@ export class FileService {
     ): Promise<PayForDataUploadResponse> {
         const payForDataUploadRequest = localFileRecordToPayForDataUploadRequest(localFile, price, fileId, signature);
         return (await this.billingApiClient.payForDataUpload(payForDataUploadRequest)).data;
+    }
+
+    public async getFileKey(fileId: string, getFileKeyRequest: GetFileKeyRequest): Promise<FileKey> {
+        if (!this.web3Wrapper.isSignatureValid(getFileKeyRequest.address, getFileKeyRequest)) {
+            throw new HttpException(
+                `Signature is invalid`,
+                HttpStatus.FORBIDDEN
+            );
+        }
+
+        const dataValidatorNode = await this.lookForNodeWhichHasFile(fileId, getFileKeyRequest.dataValidatorAddress);
+        const dataValidatorApiClient = this.dataValidatorApiClientFactory.createDataValidatorApiClientInstance({
+            scheme: "http",
+            port: dataValidatorNode.port,
+            ipAddress: dataValidatorNode.ipAddress
+        });
+
+        try {
+            return (await dataValidatorApiClient.getFileKey(fileId, getFileKeyRequest)).data;
+        } catch (error) {
+            this.log.error(`Error occurred when tried to get file key from data validator node with ip ${dataValidatorNode.ipAddress}`);
+            console.log(error);
+            throw new HttpException(
+                `Error occurred when tried to get file key to file with if ${fileId}`,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    private async lookForNodeWhichHasFile(fileId: string, dataValidatorAddress: string): Promise<NodeResponse> {
+        const dataValidatorNodes = await this.discoveryService.getNodesByAddressAndType(
+            dataValidatorAddress,
+            NodeType.DATA_VALIDATOR_NODE
+        );
+
+        if (dataValidatorNodes.length === 0) {
+            throw new HttpException(
+                `Could not find any data validator node with ${dataValidatorAddress} address`,
+                HttpStatus.NOT_FOUND
+            )
+        }
+
+        let nodePossessingFile: NodeResponse | undefined;
+
+        for (const nodeInstance of dataValidatorNodes) {
+            try {
+                const dataValidatorApiClient = this.dataValidatorApiClientFactory.createDataValidatorApiClientInstance({
+                    scheme: "http",
+                    ipAddress: nodeInstance.ipAddress,
+                    port: nodeInstance.port
+                });
+                const nodeHasFile = await dataValidatorApiClient.checkIfNodeHasFile(fileId);
+
+                if (nodeHasFile) {
+                    nodePossessingFile = nodeInstance;
+                } else {
+                    this.log.info(`Seems like data validator node with id ${nodeInstance.id} does not posses file with id ${fileId}, trying next one`)
+                }
+
+                break;
+            } catch (error) {
+                console.log(error);
+                this.log.info(`Seems like data validator node with id ${nodeInstance.id} does not posses file with id ${fileId}, trying next one`)
+            }
+        }
+
+        if (!nodePossessingFile) {
+            throw new HttpException(
+                `Could not find any data validator node which posseses file with id ${fileId}`,
+                HttpStatus.SERVICE_UNAVAILABLE
+            )
+        }
+
+        return nodePossessingFile;
     }
 }
