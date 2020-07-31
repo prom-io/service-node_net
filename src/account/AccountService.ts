@@ -3,10 +3,6 @@ import {AxiosError} from "axios";
 import {LoggerService} from "nest-logger";
 import uuid from "uuid/v4";
 import {Account} from "./Account";
-import {RegisterAccountDto} from "./types/request";
-import {BillingApiClient} from "../billing-api";
-import {AccountRepository} from "./AccountRepository";
-import {EntityType} from "../nedb/entity";
 import {
     AccountRegistrationStatusResponse,
     AccountRole,
@@ -15,6 +11,10 @@ import {
     DataOwnersOfDataValidatorResponse,
     LocalAccountResponse
 } from "./types/response";
+import {RegisterAccountDto} from "./types/request";
+import {BillingApiClient} from "../billing-api";
+import {AccountRepository} from "./AccountRepository";
+import {EntityType} from "../nedb/entity";
 import {AxiosErrorLogger} from "../logging";
 import {billingAccountRoleToAccountRole} from "./mappers";
 import {BillingAccountRole} from "../billing-api/types/response";
@@ -92,6 +92,26 @@ export class AccountService {
                     return result;
                 })
         })
+    }
+
+    public async getBalanceOFLambdaWallet(lambdaWallet: string): Promise<BalanceOfAccountResponse> {
+        try {
+            const {balanceOf: balance} = (await this.billingApiClient.getBalanceOfLambdaWallet(lambdaWallet)).data;
+            return {balance};
+        } catch (error) {
+            this.axiosErrorLogger.logAxiosError(error);
+            if (error.response) {
+                throw new HttpException(
+                    `Could not get balance of lambda wallet, billing API responded with ${error.response.status} status`,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                );
+            } else {
+                throw new HttpException(
+                    `Could not get balance of lambda wallet, billing API is unreachable`,
+                    HttpStatus.SERVICE_UNAVAILABLE
+                );
+            }
+        }
     }
 
     public async getBalanceOfAccount(address: string): Promise<BalanceOfAccountResponse> {
@@ -173,6 +193,38 @@ export class AccountService {
     }
 
     public async registerAccount(registerAccountDto: RegisterAccountDto): Promise<void> {
+        if (registerAccountDto.lambdaWallet) {
+            try {
+                await this.billingApiClient.registerLambdaWallet({
+                    ethereumAddress: registerAccountDto.address,
+                    lambdaAddress: registerAccountDto.lambdaWallet
+                });
+            } catch (error) {
+                let message = "Unknown error occurred when tried to register account";
+                let responseStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
+                if (error.config) {
+                    error = error as AxiosError;
+
+                    if (error.response) {
+                        if (error.response.data && error.response.data.message === "Lambda wallet is registered!") {
+                            message = "Lambda wallet with such address has already been registered";
+                            responseStatus = HttpStatus.CONFLICT;
+                        } else {
+                            message = `Billing API responded with ${error.response.status}`;
+                        }
+                    } else {
+                        message = "Billing API is unreachable";
+                    }
+                }
+
+                this.log.error(message);
+                this.axiosErrorLogger.logAxiosError(error);
+
+                throw new HttpException(message, responseStatus);
+            }
+        }
+
         try {
             if (registerAccountDto.type === "SERVICE_NODE") {
                 await this.registerServiceNodeAccount(registerAccountDto);

@@ -10,3 +10,4 @@ export * from "./BillingAccountRegistrationStatusResponse";
 export * from "./BillingAccountRole";
 export * from "./GenericBillingApiResponse";
 export * from "./GetBillingAccountRoleResponse";
+export * from "./BalanceOfLambdaWalletResponse";

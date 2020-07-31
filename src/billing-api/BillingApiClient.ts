@@ -5,9 +5,10 @@ import {
     PayForDataUploadRequest,
     PayForFileStorageExtensionRequest,
     RegisterAccountRequest,
-    RegisterDataOwnerRequest
+    RegisterDataOwnerRequest, RegisterLambdaWalletRequest
 } from "./types/request";
 import {
+    BalanceOfLambdaWalletResponse,
     BalanceResponse,
     BillingAccountRegistrationStatusResponse,
     BillingFileResponse,
@@ -86,5 +87,13 @@ export class BillingApiClient {
 
     public getAccountRole(address: string): AxiosPromise<GetBillingAccountRoleResponse> {
         return this.axios.get(`/account/address/role/${address}`);
+    }
+
+    public getBalanceOfLambdaWallet(lambdaWallet: string): AxiosPromise<BalanceOfLambdaWalletResponse> {
+        return this.axios.get(`/api/v1/lambda/balance/${lambdaWallet}`)
+    }
+
+    public registerLambdaWallet(registerLambdaWalletRequest: RegisterLambdaWalletRequest): AxiosPromise<void> {
+        return this.axios.post("/api/v1/lambda/register/wallet", registerLambdaWalletRequest);
     }
 }

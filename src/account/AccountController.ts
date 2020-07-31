@@ -30,6 +30,11 @@ export class AccountController {
         return this.accountService.getAllLocalAccounts();
     }
 
+    @Get("lambda/:address/balance")
+    public getBalanceOfLambdaWallet(@Param("lambdaWallet") lambdaWallet: string): Promise<BalanceOfAccountResponse> {
+        return this.accountService.getBalanceOFLambdaWallet(lambdaWallet);
+    }
+
     @Get(":address/balance")
     public getBalanceOfAccount(@Param("address") address: string): Promise<BalanceOfAccountResponse> {
         return this.accountService.getBalanceOfAccount(address);

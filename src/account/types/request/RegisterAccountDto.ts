@@ -29,10 +29,16 @@ export class RegisterAccountDto {
     @IsObject({message: "Signature must be object"})
     public signature?: SignedRequest;
 
-    constructor(address: string, type: string, privateKey: string, signature: SignedRequest) {
+    @ValidateIf((object: RegisterAccountDto) => Boolean(object.lambdaWallet))
+    @IsString()
+    @IsNotEmpty()
+    public lambdaWallet?: string;
+
+    constructor(address: string, type: string, privateKey: string, signature: SignedRequest, lambdaWallet?: string) {
         this.address = address;
         this.type = type;
         this.privateKey = privateKey;
         this.signature = signature;
+        this.lambdaWallet = lambdaWallet;
     }
 }
