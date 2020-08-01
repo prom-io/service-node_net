@@ -19,6 +19,7 @@ import {
     PayForDataUploadResponse,
     TransactionType
 } from "./types/response";
+import {WithdrawDto} from "../account/types/request";
 
 @Injectable()
 export class BillingApiClient {
@@ -95,5 +96,9 @@ export class BillingApiClient {
 
     public registerLambdaWallet(registerLambdaWalletRequest: RegisterLambdaWalletRequest): AxiosPromise<void> {
         return this.axios.post("/api/v1/lambda/register/wallet", registerLambdaWalletRequest);
+    }
+
+    public withdrawFunds(withdrawRequest: WithdrawDto): AxiosPromise<void> {
+        return this.axios.post("api/v1/lambda/withdraw", withdrawRequest);
     }
 }

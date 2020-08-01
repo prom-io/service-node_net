@@ -11,7 +11,7 @@ import {
     DataOwnersOfDataValidatorResponse,
     LocalAccountResponse
 } from "./types/response";
-import {RegisterAccountDto} from "./types/request";
+import {RegisterAccountDto, WithdrawDto} from "./types/request";
 import {BillingApiClient} from "../billing-api";
 import {AccountRepository} from "./AccountRepository";
 import {EntityType} from "../nedb/entity";
@@ -189,6 +189,27 @@ export class AccountService {
             this.axiosErrorLogger.logAxiosError(error);
 
             throw new HttpException(message, responseStatus);
+        }
+    }
+
+    public async withdrawFunds(withdrawDto: WithdrawDto): Promise<void> {
+        try {
+            await this.billingApiClient.withdrawFunds(withdrawDto);
+        } catch (error) {
+            if (error.response) {
+                this.log.error(`Error occurred when tried to withdraw funds, billing API responded with ${error.response.status} status`);
+                console.log(error);
+                throw new HttpException(
+                    `Billing API responded with ${error.response.status} status`,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                );
+            } else {
+                this.log.error("Billing API in unreachable");
+                throw new HttpException(
+                    "Billing API is unreachable",
+                    HttpStatus.SERVICE_UNAVAILABLE
+                );
+            }
         }
     }
 

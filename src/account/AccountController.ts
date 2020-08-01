@@ -1,6 +1,6 @@
 import {Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post} from "@nestjs/common";
 import {AccountService} from "./AccountService";
-import {RegisterAccountDto} from "./types/request";
+import {RegisterAccountDto, WithdrawDto} from "./types/request";
 import {
     AccountRegistrationStatusResponse,
     BalanceOfAccountResponse,
@@ -28,6 +28,11 @@ export class AccountController {
     @Get()
     public getLocalAccounts(): Promise<LocalAccountResponse[]> {
         return this.accountService.getAllLocalAccounts();
+    }
+
+    @Post("withdraw")
+    public withdrawFunds(@Body() withdrawDto: WithdrawDto): Promise<void> {
+        return this.accountService.withdrawFunds(withdrawDto);
     }
 
     @Get("lambda/:address/balance")
