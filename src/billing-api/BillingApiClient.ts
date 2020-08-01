@@ -20,6 +20,7 @@ import {
     TransactionType
 } from "./types/response";
 import {WithdrawDto} from "../account/types/request";
+import {LambdaWalletRegistrationStatusResponse} from "./types/response/LambdaWalletRegistrationStatusResponse";
 
 @Injectable()
 export class BillingApiClient {
@@ -100,5 +101,9 @@ export class BillingApiClient {
 
     public withdrawFunds(withdrawRequest: WithdrawDto): AxiosPromise<void> {
         return this.axios.post("api/v1/lambda/withdraw", withdrawRequest);
+    }
+
+    public isLambdaWalletRegistered(lambdaWallet: string): AxiosPromise<LambdaWalletRegistrationStatusResponse> {
+        return this.axios.get(`/api/v1/lambda/registered/${lambdaWallet}`);
     }
 }

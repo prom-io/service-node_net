@@ -35,9 +35,14 @@ export class AccountController {
         return this.accountService.withdrawFunds(withdrawDto);
     }
 
-    @Get("lambda/:address/balance")
+    @Get("lambda/:lambdaWallet/balance")
     public getBalanceOfLambdaWallet(@Param("lambdaWallet") lambdaWallet: string): Promise<BalanceOfAccountResponse> {
         return this.accountService.getBalanceOFLambdaWallet(lambdaWallet);
+    }
+
+    @Get("lambda/:lambdaWallet/is-registered")
+    public isLambdaWalletRegistered(@Param("lambdaWallet") lambdaWallet: string): Promise<Omit<AccountRegistrationStatusResponse, "role">> {
+        return this.accountService.isLambdaWalletRegistered(lambdaWallet);
     }
 
     @Get(":address/balance")

@@ -213,6 +213,12 @@ export class AccountService {
         }
     }
 
+    public async isLambdaWalletRegistered(lambdaWallet: string): Promise<Omit<AccountRegistrationStatusResponse, "role">> {
+        const {isRegistered: registered} = (await this.billingApiClient.isLambdaWalletRegistered(lambdaWallet)).data;
+
+        return {registered}
+    }
+
     public async registerAccount(registerAccountDto: RegisterAccountDto): Promise<void> {
         if (registerAccountDto.lambdaWallet) {
             try {
