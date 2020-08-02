@@ -31,7 +31,7 @@ export class DdsApiClient {
                         attributes: {
                             price: randomNumber({
                                 min: 0.0000000069444,
-                                max: 1
+                                max: 0.001
                             }),
                             name: uploadFileRequest.name,
                             additional: uploadFileRequest.additional,
