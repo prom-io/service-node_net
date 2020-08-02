@@ -8,6 +8,7 @@ import {
     DataOwnersOfDataValidatorResponse,
     LocalAccountResponse
 } from "./types/response";
+import {LambdaTransactionResponse} from "../billing-api/types/response";
 
 @Controller("api/v1/accounts")
 export class AccountController {
@@ -38,6 +39,11 @@ export class AccountController {
     @Get("lambda/:lambdaWallet/balance")
     public getBalanceOfLambdaWallet(@Param("lambdaWallet") lambdaWallet: string): Promise<BalanceOfAccountResponse> {
         return this.accountService.getBalanceOFLambdaWallet(lambdaWallet);
+    }
+
+    @Get("lambda/:lambdaWallet/transactions")
+    public getTransactionsOfLambdaWallet(@Param("lambdaWallet") lambdaWallet: string): Promise<LambdaTransactionResponse[]> {
+        return this.accountService.getLambdaTransactionsOfWallet(lambdaWallet);
     }
 
     @Get("lambda/:lambdaWallet/is-registered")

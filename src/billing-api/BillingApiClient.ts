@@ -5,7 +5,8 @@ import {
     PayForDataUploadRequest,
     PayForFileStorageExtensionRequest,
     RegisterAccountRequest,
-    RegisterDataOwnerRequest, RegisterLambdaWalletRequest
+    RegisterDataOwnerRequest,
+    RegisterLambdaWalletRequest
 } from "./types/request";
 import {
     BalanceOfLambdaWalletResponse,
@@ -14,7 +15,9 @@ import {
     BillingFileResponse,
     BillingTransactionResponse,
     DataOwnersResponse,
-    GenericBillingApiResponse, GetBillingAccountRoleResponse,
+    GenericBillingApiResponse,
+    GetBillingAccountRoleResponse,
+    LambdaTransactionResponse,
     PaginatedResponse,
     PayForDataUploadResponse,
     TransactionType
@@ -105,5 +108,9 @@ export class BillingApiClient {
 
     public isLambdaWalletRegistered(lambdaWallet: string): AxiosPromise<LambdaWalletRegistrationStatusResponse> {
         return this.axios.get(`/api/v1/lambda/registered/${lambdaWallet}`);
+    }
+
+    public getLambdaTransactions(lambdaWallet: string): AxiosPromise<LambdaTransactionResponse[]> {
+        return this.axios.get(`/api/v1/lambda/tx/${lambdaWallet}`);
     }
 }

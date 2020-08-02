@@ -251,6 +251,8 @@ export class FileService {
 
             this.log.debug(`File uploading has been completed - ${localFile._id}`);
         } catch (error) {
+            console.log(error);
+
             this.log.error(`Data upload failed at stage: ${stage}`);
 
             if (error.response) {

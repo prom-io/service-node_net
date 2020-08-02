@@ -11,3 +11,4 @@ export * from "./BillingAccountRole";
 export * from "./GenericBillingApiResponse";
 export * from "./GetBillingAccountRoleResponse";
 export * from "./BalanceOfLambdaWalletResponse";
+export * from "./LambdaTransactionResponse";

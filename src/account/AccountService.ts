@@ -17,7 +17,7 @@ import {AccountRepository} from "./AccountRepository";
 import {EntityType} from "../nedb/entity";
 import {AxiosErrorLogger} from "../logging";
 import {billingAccountRoleToAccountRole} from "./mappers";
-import {BillingAccountRole} from "../billing-api/types/response";
+import {BillingAccountRole, LambdaTransactionResponse} from "../billing-api/types/response";
 
 @Injectable()
 export class AccountService {
@@ -125,6 +125,25 @@ export class AccountService {
 
             if (error.response) {
                 message = `Billing API responded with ${error.response.status} status when tried to get balance of ${address}`;
+                console.log(error);
+            }
+
+            this.log.error(message);
+            this.axiosErrorLogger.logAxiosError(error);
+
+            throw new HttpException(message, responseStatus);
+        }
+    }
+
+    public async getLambdaTransactionsOfWallet(lambdaWallet: string): Promise<LambdaTransactionResponse[]> {
+        try {
+            return (await this.billingApiClient.getLambdaTransactions(lambdaWallet)).data;
+        } catch (error) {
+            let message = "Billing API is unreachable";
+            const responseStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
+            if (error.response) {
+                message = `Billing API responded with ${error.response.status} status when tried to get transactions ${lambdaWallet}`;
                 console.log(error);
             }
 
