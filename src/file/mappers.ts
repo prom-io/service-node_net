@@ -115,10 +115,10 @@ export const localFileRecordToPayForDataUploadRequest = (
     fileId: string,
     signature: ISignedRequest
 ): PayForDataUploadRequest => ({
-    sum: "" + uploadPrice,
+    sum: "" + uploadPrice.toFixed(6),
     data_owner: localFileRecord.dataOwnerAddress,
     data_validator: localFileRecord.dataValidatorAddress,
-    buy_sum: "" + localFileRecord.price,
+    buy_sum: "" + localFileRecord.price.toFixed(6),
     extension: localFileRecord.extension,
     id: fileId,
     mime_type: localFileRecord.mimeType,
