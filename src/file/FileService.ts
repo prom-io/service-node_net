@@ -1,9 +1,10 @@
-import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {HttpException, HttpStatus, Inject, Injectable} from "@nestjs/common";
+import {LoggerService} from "nest-logger";
 import uuid from "uuid/v4";
 import fileSystem from "fs";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
-import {LoggerService} from "nest-logger";
+import {AxiosInstance} from "axios";
 import {FileUploadingStage} from "./types";
 import {
     CreateLocalFileRecordDto,
@@ -11,7 +12,12 @@ import {
     UploadChunkDto,
     UploadLocalFileToDdsDto
 } from "./types/request";
-import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
+import {
+    DdsFileResponse,
+    DdsFileUploadCheckResponse,
+    FilePriceAndKeepUntilMap,
+    LocalFileRecordResponse
+} from "./types/response";
 import {LocalFileRecord} from "./LocalFileRecord";
 import {
     billingFileToDdsFileResponse,
@@ -33,6 +39,8 @@ import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
 import {Web3Wrapper} from "../web3";
 import {ISignedRequest} from "../web3/types";
+import {DiscoveryService} from "../discovery";
+import {NodeType} from "../discovery/types";
 
 @Injectable()
 export class FileService {
@@ -42,6 +50,8 @@ export class FileService {
         private readonly ddsApiClient: DdsApiClient,
         private readonly accountService: AccountService,
         private readonly web3Wrapper: Web3Wrapper,
+        private readonly discoveryService: DiscoveryService,
+        @Inject("filesServiceAxiosInstance") private readonly axios: AxiosInstance,
         private readonly log: LoggerService
     ) {
     }
@@ -63,7 +73,40 @@ export class FileService {
 
     public async getFiles(page: number, pageSize: number): Promise<DdsFileResponse[]> {
         try {
-            const files = (await this.billingApiClient.getFiles(page, pageSize)).data.data;
+            let files = (await this.billingApiClient.getFiles(page, pageSize)).data.data;
+            const filesAndDataValidatorMap: {[dataValidator: string]: string[]} = {};
+
+            files.forEach(file => {
+                if (filesAndDataValidatorMap[file.owner]) {
+                    filesAndDataValidatorMap[file.owner].push(file.id);
+                } else {
+                    filesAndDataValidatorMap[file.owner] = [file.id];
+                }
+            });
+
+            for (const dataValidatorAddress of Object.keys(filesAndDataValidatorMap)) {
+                const dataValidatorNodes = await this.discoveryService.getNodesByAddressAndType(dataValidatorAddress, NodeType.DATA_VALIDATOR_NODE);
+
+                if (dataValidatorNodes.length !== 0) {
+                    const dataValidatorNode = dataValidatorNodes[0];
+                    try {
+                        const url = `http://${dataValidatorNode.ipAddress}:${dataValidatorNode.port}/api/v3/files/price-and-keep-until-map?filesIds=${JSON.stringify(filesAndDataValidatorMap[dataValidatorAddress])}`;
+                        const filePriceAndKeepUntilMap: FilePriceAndKeepUntilMap = (await this.axios.get(url)).data;
+
+                        files = files.map(file => {
+                            if (filePriceAndKeepUntilMap[file.id]) {
+                                file.buy_sum = `${filePriceAndKeepUntilMap[file.id].price}`;
+                                file.keep_until = `${filePriceAndKeepUntilMap[file.id].keepUntil}`;
+                            }
+
+                            return file;
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
+
             return files.map(billingFile => billingFileToDdsFileResponse(billingFile));
         } catch (error) {
             if (error.response) {
