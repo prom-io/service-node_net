@@ -88,7 +88,7 @@ export const billingFileToDdsFileResponse = (billingFile: BillingFileResponse): 
     extension: billingFile.file_extension,
     metadata: JSON.parse(billingFile.meta_data),
     price: Number(billingFile.buy_sum),
-    keepUntil: "",
+    keepUntil: billingFile.keep_until,
     mimeType: billingFile.mime_type,
     name: billingFile.name,
     serviceNode: "",

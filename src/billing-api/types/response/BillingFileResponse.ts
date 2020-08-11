@@ -8,5 +8,6 @@ export interface BillingFileResponse {
     sum: string,
     buy_sum: string,
     meta_data: string,
-    data_owner: string
+    data_owner: string,
+    keep_until?: string
 }

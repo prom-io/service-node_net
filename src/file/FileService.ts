@@ -1,10 +1,11 @@
-import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {HttpException, HttpStatus, Inject, Injectable} from "@nestjs/common";
+import {LoggerService} from "nest-logger";
 import uuid from "uuid/v4";
 import fileSystem from "fs";
 import path from "path";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
-import {LoggerService} from "nest-logger";
+import {AxiosInstance} from "axios";
 import {FileUploadingStage} from "./types";
 import {
     CreateLocalFileRecordDto,
@@ -12,7 +13,12 @@ import {
     UploadChunkDto,
     UploadLocalFileToDdsDto
 } from "./types/request";
-import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
+import {
+    DdsFileResponse,
+    DdsFileUploadCheckResponse,
+    FilePriceAndKeepUntilMap,
+    LocalFileRecordResponse
+} from "./types/response";
 import {LocalFileRecord} from "./LocalFileRecord";
 import {
     billingFileToDdsFileResponse,
@@ -45,6 +51,8 @@ export class FileService {
         private readonly ddsApiClient: DdsApiClient,
         private readonly accountService: AccountService,
         private readonly web3Wrapper: Web3Wrapper,
+        private readonly discoveryService: DiscoveryService,
+        @Inject("filesServiceAxiosInstance") private readonly axios: AxiosInstance,
         private readonly log: LoggerService
     ) {
     }
@@ -86,7 +94,40 @@ export class FileService {
 
     public async getFiles(page: number, pageSize: number): Promise<DdsFileResponse[]> {
         try {
-            const files = (await this.billingApiClient.getFiles(page, pageSize)).data.data;
+            let files = (await this.billingApiClient.getFiles(page, pageSize)).data.data;
+            const filesAndDataValidatorMap: {[dataValidator: string]: string[]} = {};
+
+            files.forEach(file => {
+                if (filesAndDataValidatorMap[file.owner]) {
+                    filesAndDataValidatorMap[file.owner].push(file.id);
+                } else {
+                    filesAndDataValidatorMap[file.owner] = [file.id];
+                }
+            });
+
+            for (const dataValidatorAddress of Object.keys(filesAndDataValidatorMap)) {
+                const dataValidatorNodes = await this.discoveryService.getNodesByAddressAndType(dataValidatorAddress, NodeType.DATA_VALIDATOR_NODE);
+
+                if (dataValidatorNodes.length !== 0) {
+                    const dataValidatorNode = dataValidatorNodes[0];
+                    try {
+                        const url = `http://${dataValidatorNode.ipAddress}:${dataValidatorNode.port}/api/v3/files/price-and-keep-until-map?filesIds=${JSON.stringify(filesAndDataValidatorMap[dataValidatorAddress])}`;
+                        const filePriceAndKeepUntilMap: FilePriceAndKeepUntilMap = (await this.axios.get(url)).data;
+
+                        files = files.map(file => {
+                            if (filePriceAndKeepUntilMap[file.id]) {
+                                file.buy_sum = `${filePriceAndKeepUntilMap[file.id].price}`;
+                                file.keep_until = `${filePriceAndKeepUntilMap[file.id].keepUntil}`;
+                            }
+
+                            return file;
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
+
             return files.map(billingFile => billingFileToDdsFileResponse(billingFile));
         } catch (error) {
             if (error.response) {
@@ -222,8 +263,7 @@ export class FileService {
             )
         }
 
-        const data = fileSystem.readFileSync(localFile.localPath).toString();
-        this.processDataUploading(localFile, uploadLocalFileToDdsDto, data);
+        this.processDataUploading(localFile, uploadLocalFileToDdsDto);
 
         return {success: true};
     }
@@ -231,7 +271,6 @@ export class FileService {
     private async processDataUploading(
         localFile: LocalFileRecord,
         uploadLocalFileToDdsDto: UploadLocalFileToDdsDto,
-        data: string
     ): Promise<void> {
         this.log.debug(`Started processing data uploading - ${localFile._id}`);
         let stage: FileUploadingStage = FileUploadingStage.DDS_UPLOAD;
@@ -283,10 +322,6 @@ export class FileService {
 
             await this.localFileRecordRepository.save(localFile);
         }
-    }
-
-    private async uploadFileToDds(uploadFileRequest: UploadFileRequest): Promise<DdsApiResponse<DdsFileInfo>> {
-        return  (await this.ddsApiClient.uploadFile(uploadFileRequest)).data;
     }
 
     private async payForDataUpload(

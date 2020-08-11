@@ -52,7 +52,6 @@ export class PurchaseService {
 
         for (const nodeInstance of dataValidatorNodes) {
             try {
-                console.log(this.axios);
                 await this.axios.get(`http://${nodeInstance.ipAddress}:${nodeInstance.port}/api/v3/files/${purchaseDataDto.fileId}`);
                 nodePossessingFile = nodeInstance;
                 break;
