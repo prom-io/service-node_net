@@ -1,11 +1,13 @@
 import {Inject, Injectable} from "@nestjs/common";
-import {AxiosError, AxiosInstance, AxiosPromise} from "axios";
+import {AxiosInstance, AxiosPromise} from "axios";
 import uuid4 from "uuid/v4";
-import fileSystem from "fs";
+import FormData from "form-data";
+import fileSystem, {PathLike} from "fs";
 import randomNumber from "random-number";
 import {ExtendStorageDurationRequest, NotifyPaymentStatusRequest, UploadFileRequest} from "./types/request";
 import {
     DdsApiResponse,
+    DdsUploadResponse,
     ExtendFileStorageDurationResponse,
     NotifyPaymentStatusResponse,
     UploadFileResponse
@@ -16,6 +18,17 @@ import {DdsApiType} from "./types";
 @Injectable()
 export class DdsApiClient {
     constructor(@Inject("ddsApiAxiosInstance") private readonly axios: AxiosInstance) {
+    }
+
+    public UNSTABLE_uploadFile(filePath: PathLike): AxiosPromise<DdsUploadResponse> {
+        const formData = new FormData();
+        formData.append("file", fileSystem.createReadStream(filePath));
+
+        return this.axios.post("/file-upload", formData, {headers: formData.getHeaders()});
+    }
+
+    public UNSTABLE_getFile(fileId: string): AxiosPromise {
+        return this.axios.get(`/file-download/${fileId}`, {responseType: "stream"});
     }
 
     public uploadFile(uploadFileRequest: UploadFileRequest): AxiosPromise<DdsApiResponse<UploadFileResponse>> {

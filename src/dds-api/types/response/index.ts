@@ -5,3 +5,4 @@ export * from "./StorageResponse";
 export * from "./UploadFileResponse";
 export * from "./DdsApiResponse";
 export * from "./DdsApiResponseData";
+export * from "./DdsUploadResponse";

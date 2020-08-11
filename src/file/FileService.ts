@@ -1,6 +1,7 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import uuid from "uuid/v4";
 import fileSystem from "fs";
+import path from "path";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import {LoggerService} from "nest-logger";
@@ -32,7 +33,9 @@ import {DdsApiResponse} from "../dds-api/types/response";
 import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
 import {Web3Wrapper} from "../web3";
-import {ISignedRequest} from "../web3/types";
+import {ISignedRequest, SignedRequest} from "../web3/types";
+import {DiscoveryService} from "../discovery";
+import {NodeType} from "../discovery/types";
 
 @Injectable()
 export class FileService {
@@ -49,16 +52,36 @@ export class FileService {
     public async getFile(fileId: string, httpResponse: Response): Promise<void> {
         try {
             this.log.debug(`Retrieving file with id ${fileId}`);
-            /*
-            const {data} = await this.ddsApiClient.getFile(fileId);
+            const {data} = await this.ddsApiClient.UNSTABLE_getFile(fileId);
             this.log.debug(`Retrieved file with id ${fileId}`);
             httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
-            data.pipe(httpResponse);*/
-            httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
+            data.pipe(httpResponse);
         } catch (error) {
             console.log(error);
             throw error;
         }
+    }
+
+    public async cancelFileUpload(localFileRecordId: string, signedRequest: SignedRequest): Promise<void> {
+        const file = await this.localFileRecordRepository.findById(localFileRecordId);
+
+        if (!file) {
+            throw new HttpException(
+                `Could not find local file reroc with id ${localFileRecordId}`,
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        if (this.web3Wrapper.isSignatureValid(file.dataValidatorAddress, signedRequest)) {
+            throw new HttpException(
+                `Failed to verify signature`,
+                HttpStatus.FORBIDDEN
+            );
+        }
+
+        file.failed = true;
+        await this.localFileRecordRepository.save(file);
+        await this.deleteLocalFileRecord(localFileRecordId);
     }
 
     public async getFiles(page: number, pageSize: number): Promise<DdsFileResponse[]> {
@@ -121,7 +144,10 @@ export class FileService {
             this.log.debug("Creating new local file record");
             const fileId = uuid();
             const serviceNodeAddress = (await this.accountService.getDefaultAccount()).address;
-            const localPath = `${config.TEMPORARY_FILES_DIRECTORY}/${fileId}`;
+            const extension = (createLocalFileRecordDto.extension && createLocalFileRecordDto.extension.trim().length !== 0)
+                ? createLocalFileRecordDto.extension
+                : "encrypted";
+            const localPath = `${config.TEMPORARY_FILES_DIRECTORY}/${fileId}.${extension}`;
             fileSystem.closeSync(fileSystem.openSync(localPath, "w"));
             const localFile: LocalFileRecord = createLocalFileRecordDtoToLocalFileRecord(
                 createLocalFileRecordDto,
@@ -213,18 +239,18 @@ export class FileService {
         try {
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
-            const uploadFileRequest = localFileRecordToDdsUploadRequest(localFile, data);
-            const ddsResponse = await this.uploadFileToDds(uploadFileRequest);
+            const ddsResponse = await this.ddsApiClient.UNSTABLE_uploadFile(localFile.localPath);
+            const uploadPrice = localFile.price * 0.01;
 
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
-            this.log.debug(`Assigned DDS ID is ${ddsResponse.data.id} - ${localFile._id}`);
+            this.log.debug(`Assigned DDS ID is ${ddsResponse.data.fileName} - ${localFile._id}`);
             stage = FileUploadingStage.BILLING_PROCESSING;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
             const payForDataUploadResponse = await this.payForDataUpload(
                 localFile,
-                ddsResponse.data.attributes.price,
-                ddsResponse.data.id,
+                uploadPrice,
+                ddsResponse.data.fileName,
                 uploadLocalFileToDdsDto.signature
             );
 
@@ -232,17 +258,11 @@ export class FileService {
             stage = FileUploadingStage.DDS_PAYMENT_NOTIFICATION;
             this.log.debug(`Starting stage ${stage} - ${localFile._id}`);
 
-            /*await this.ddsApiClient.notifyPaymentStatus({
-                file_id: ddsResponse.data.id,
-                amount: ddsResponse.data.attributes.price,
-                status: "success"
-            });*/
-
             this.log.debug(`Stage ${stage} has been completed - ${localFile._id}`);
 
             localFile.failed = false;
-            localFile.storagePrice = ddsResponse.data.attributes.price;
-            localFile.ddsId = ddsResponse.data.id;
+            localFile.storagePrice = uploadPrice;
+            localFile.ddsId = ddsResponse.data.fileName;
             localFile.uploadedToDds = true;
             localFile.dataOwnerAddress = payForDataUploadResponse.address;
             localFile.privateKey = payForDataUploadResponse.privateKey;

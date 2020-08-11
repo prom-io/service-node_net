@@ -8,7 +8,8 @@ import {config} from "../config";
         {
             provide: "ddsApiAxiosInstance",
             useValue: Axios.create({
-                baseURL: config.DDS_API_BASE_URL
+                baseURL: `${config.DDS_API_BASE_URL}/api/v1`,
+                timeout: Number.MAX_SAFE_INTEGER
             })
         },
         DdsApiClient

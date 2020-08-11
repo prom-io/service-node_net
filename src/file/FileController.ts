@@ -9,6 +9,7 @@ import {
 } from "./types/request";
 import {DdsFileResponse, DdsFileUploadCheckResponse, LocalFileRecordResponse} from "./types/response";
 import {getValidPage, getValidPageSize} from "../utils/pagination";
+import {SignedRequest} from "../web3/types";
 
 @Controller("api/v1/files")
 export class FileController {
@@ -60,6 +61,12 @@ export class FileController {
     @HttpCode(HttpStatus.NO_CONTENT)
     public async deleteLocalFileRecord(@Param("localFileId") localFileId: string): Promise<void> {
         await this.fileService.deleteLocalFileRecord(localFileId);
+    }
+
+    @Post("local/:localFileId/cancel")
+    public async cancelLocalFileUpload(@Param("localFileId") localFileId: string,
+                                       @Body() signedRequest: SignedRequest): Promise<void> {
+        await this.fileService.cancelFileUpload(localFileId, signedRequest);
     }
 
     @Post("local/:localFileId/to-dds")

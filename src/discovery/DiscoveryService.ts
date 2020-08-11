@@ -16,7 +16,7 @@ import multiaddr from "multiaddr";
 import {BootstrapNodesContainer} from "./BootstrapNodesContainer";
 import {NodeType} from "./types";
 import {RegisterNodeRequest} from "./types/request";
-import {NodeResponse} from "./types/response";
+import {NodeResponse, NodeStatusResponse} from "./types/response";
 import {getIpAddress} from "../utils/ip";
 import {getRandomElement} from "../utils/random-element";
 import {config} from "../config";
@@ -48,7 +48,11 @@ export class DiscoveryService extends NestSchedule implements OnApplicationBoots
             const nodeIdsToRemove: string[] = [];
             for (const node of this.registeredNodes) {
                 try {
-                    await Axios.get(`http://${node.ipAddress}:${node.port}/api/v1/status`)
+                   const nodeStatusResponse: NodeStatusResponse = (await Axios.get(`http://${node.ipAddress}:${node.port}/api/v1/status`)).data;
+
+                   if (nodeStatusResponse.walletAddresses && nodeStatusResponse.walletAddresses.length !== node.addresses.length) {
+                       node.addresses = nodeStatusResponse.walletAddresses;
+                   }
                 } catch (error) {
                     this.log.info(`Node with IP ${node.ipAddress}, port ${node.port} and id ${node.id} seems to be down`);
                     nodeIdsToRemove.push(node.id);

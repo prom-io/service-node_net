@@ -34,6 +34,7 @@
     "date-fns": "^2.9.0",
     "dotenv": "^8.2.0",
     "env-decorator": "^1.0.0",
+    "form-data": "^3.0.0",
     "libp2p": "^0.27.0-rc.0",
     "libp2p-bootstrap": "^0.10.3",
     "libp2p-gossipsub": "^0.2.2",
