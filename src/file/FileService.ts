@@ -2,7 +2,7 @@ import {HttpException, HttpStatus, Inject, Injectable} from "@nestjs/common";
 import {LoggerService} from "nest-logger";
 import uuid from "uuid/v4";
 import fileSystem from "fs";
-import path from "path";
+import {v4 as isV4UUID} from "is-uuid";
 import {addMonths, differenceInSeconds, parse} from "date-fns";
 import {Response} from "express";
 import {AxiosInstance} from "axios";
@@ -25,7 +25,6 @@ import {
     createDdsFileUploadCheckResponseFromLocalFileRecord,
     createLocalFileRecordDtoToLocalFileRecord,
     localFileRecordToDdsFileResponse,
-    localFileRecordToDdsUploadRequest,
     localFileRecordToLocalFileRecordResponse,
     localFileRecordToPayForDataUploadRequest
 } from "./mappers";
@@ -34,9 +33,6 @@ import {config} from "../config";
 import {DdsApiClient} from "../dds-api";
 import {BillingApiClient} from "../billing-api";
 import {AccountService} from "../account";
-import {UploadFileRequest} from "../dds-api/types/request";
-import {DdsApiResponse} from "../dds-api/types/response";
-import {DdsFileInfo} from "../dds-api/types";
 import {PayForDataUploadResponse} from "../billing-api/types/response";
 import {Web3Wrapper} from "../web3";
 import {ISignedRequest, SignedRequest} from "../web3/types";
@@ -60,6 +56,13 @@ export class FileService {
     public async getFile(fileId: string, httpResponse: Response): Promise<void> {
         try {
             this.log.debug(`Retrieving file with id ${fileId}`);
+
+            if (isV4UUID(fileId)) {
+                this.log.debug("File ID has UUID format");
+                httpResponse.download(`${process.env.DDS_STUB_FILES_DIRECTORY}/${fileId}`);
+                return ;
+            }
+
             const {data} = await this.ddsApiClient.UNSTABLE_getFile(fileId);
             this.log.debug(`Retrieved file with id ${fileId}`);
             httpResponse.header("Content-Disposition", `attachment; filename=${fileId}`);
