@@ -1,4 +1,4 @@
-import {FileMetadata} from "./types";
+import {FileMetadata, FileUploadingStage} from "./types";
 import {IBaseEntity} from "../nedb/entity";
 
 export interface LocalFileRecord extends IBaseEntity {
@@ -15,6 +15,7 @@ export interface LocalFileRecord extends IBaseEntity {
     keepUntil: string,
     uploadedToDds: boolean,
     failed: boolean,
+    failedAtState?: FileUploadingStage,
     ddsId?: string,
     price: number,
     storagePrice?: number,

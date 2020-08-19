@@ -78,7 +78,7 @@ export class FileService {
 
         if (!file) {
             throw new HttpException(
-                `Could not find local file reroc with id ${localFileRecordId}`,
+                `Could not find local file with id ${localFileRecordId}`,
                 HttpStatus.NOT_FOUND
             );
         }
@@ -322,6 +322,7 @@ export class FileService {
             }
 
             localFile.failed = true;
+            localFile.failedAtState = stage;
 
             await this.localFileRecordRepository.save(localFile);
         }

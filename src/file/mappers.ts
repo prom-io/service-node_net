@@ -22,7 +22,8 @@ export const createDdsFileUploadCheckResponseFromLocalFileRecord = (localFileRec
     } else if (localFileRecord.failed) {
         return {
             fullyUploaded: false,
-            failed: true
+            failed: true,
+            failedAtStage: localFileRecord.failedAtState
         }
     } else {
         return {
