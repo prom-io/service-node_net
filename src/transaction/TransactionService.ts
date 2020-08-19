@@ -22,7 +22,7 @@ export class TransactionService {
             return (await this.billingApiClient.getTransactionsOfAddressByType(
                 address,
                 type,
-                page,
+                page + 1,
                 pageSize
             ))
                 .data
