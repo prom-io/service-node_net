@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {LoggerService} from "nest-logger";
 import {billingTransactionResponseToTransactionResponse} from "./mappers";
 import {BillingApiClient} from "../billing-api";
@@ -17,15 +17,30 @@ export class TransactionService {
         pageSize: number
     ): Promise<TransactionResponse[]> {
         this.log.debug(`Retrieving transactions of address ${address} with ${type} type`);
-        return (await this.billingApiClient.getTransactionsOfAddressByType(
-            address,
-            type,
-            page,
-            pageSize
-        ))
-            .data
-            .data
-            .map(transaction => billingTransactionResponseToTransactionResponse(transaction))
+
+        try {
+            return (await this.billingApiClient.getTransactionsOfAddressByType(
+                address,
+                type,
+                page,
+                pageSize
+            ))
+                .data
+                .data
+                .map(transaction => billingTransactionResponseToTransactionResponse(transaction))
+        } catch (error) {
+            let errorMessage: string;
+            if (error.response) {
+                errorMessage = `Error occurred when tried to fetch transactions, Service node responded with ${error.response.status} status`;
+            } else {
+                errorMessage = "Billing API is unreachable";
+            }
+
+            this.log.error(errorMessage);
+            console.log(error);
+
+            throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     public async getAllTransactionsOfAddress(
