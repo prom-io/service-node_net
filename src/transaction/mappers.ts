@@ -1,14 +1,14 @@
-import {BillingTransactionResponse} from "../billing-api/types/response";
 import {TransactionResponse} from "./types/response";
+import {BillingTransactionResponse} from "../billing-api/types/response";
 
 export const billingTransactionResponseToTransactionResponse = (billingTransactionResponse: BillingTransactionResponse): TransactionResponse => ({
-    id: billingTransactionResponse.id,
+    id: billingTransactionResponse.fileUuid,
     dataMart: billingTransactionResponse.dataMart,
     dataValidator: billingTransactionResponse.dataValidator,
     type: billingTransactionResponse.txType,
     dataOwner: billingTransactionResponse.dataOwner,
-    value: Number(billingTransactionResponse.value),
-    created_at: billingTransactionResponse.created_at,
+    value: Number(billingTransactionResponse.amount) / (10 ** 6),
+    created_at: billingTransactionResponse.createdAt,
     hash: billingTransactionResponse.hash,
     queueNumber: billingTransactionResponse.queueNumber,
     blockNumber: billingTransactionResponse.blockNumber,

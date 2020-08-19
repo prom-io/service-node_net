@@ -26,7 +26,7 @@ export class TransactionService {
                 pageSize
             ))
                 .data
-                .data
+                .items
                 .map(transaction => billingTransactionResponseToTransactionResponse(transaction))
         } catch (error) {
             let errorMessage: string;

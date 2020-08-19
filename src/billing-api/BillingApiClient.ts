@@ -24,6 +24,7 @@ import {
 } from "./types/response";
 import {WithdrawDto} from "../account/types/request";
 import {LambdaWalletRegistrationStatusResponse} from "./types/response/LambdaWalletRegistrationStatusResponse";
+import {BillingTransactionsResponse} from "./types/response/BillingTransactionsResponse";
 
 @Injectable()
 export class BillingApiClient {
@@ -82,7 +83,7 @@ export class BillingApiClient {
         type: TransactionType,
         page: number, 
         pageSize: number
-    ): AxiosPromise<PaginatedResponse<BillingTransactionResponse>> {
+    ): AxiosPromise<BillingTransactionsResponse> {
         return this.axios.get(`/transaction/address/${address}/type/${type}/paginate/${page}/${pageSize}`);
     }
 

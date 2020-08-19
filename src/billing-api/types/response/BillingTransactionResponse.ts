@@ -1,7 +1,8 @@
 import {TransactionType} from "./TransactionType";
 
 export interface BillingTransactionResponse {
-    id: string,
+    id: number,
+    fileUuid: string,
     hash: string,
     txType: TransactionType,
     dataOwner: string,
@@ -10,7 +11,15 @@ export interface BillingTransactionResponse {
     blockNumber: number,
     serviceNode: string,
     queueNumber: number,
-    value: string,
+    amount: string,
     status: boolean,
-    created_at: string
+    createdAt: string,
+    valueInServiceNode: string,
+    valueInDataMart: string,
+    valueInDataValidator: string,
+    valueInDataOwner: string,
+    valueOutServiceNode: string,
+    valueOutDataValidator: string,
+    valueOutDataMart: string,
+    valueOutDataOwner: string
 }
